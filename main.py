@@ -41,7 +41,6 @@ def plot_avg_3x3(pixelx, pixely, xlims=(min(wl), max(wl))):
     plt.xlim(xlims)
     plt.ylim(-5, 5)
     plt.minorticks_on()
-    plt.show()
 
 def avg_3x3(pixelx, pixely):
      return np.nanmean(np.array((data[:, pixelx-1, pixely - 1], data[:, pixelx-1, pixely], data[:, pixelx, pixely], 
@@ -51,6 +50,8 @@ def avg_3x3(pixelx, pixely):
 def reduce_cont(pixel):
     rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
     return rolling_median
+
+
 
 def create_spectrum_photos():
     for i in range(np.shape(data)[1]):
