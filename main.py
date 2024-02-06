@@ -1,15 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import pandas as pd
-import tkinter as tk
 import os
-import astropy.units as units
-from astropy.stats import SigmaClip
-from astropy.visualization import simple_norm
-from astropy.convolution import convolve
+#import astropy.units as units
+#from astropy.stats import SigmaClip
+#from astropy.visualization import simple_norm
+#from astropy.convolution import convolve
 from astropy.io import fits
-from astropy.stats import sigma_clipped_stats
+#from astropy.stats import sigma_clipped_stats
 
 
 file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
@@ -19,19 +17,33 @@ data = file[1].data
 wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
 
 
-def plot_pixel(pixel, xlims=(min(wl), max(wl))):
+def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
     plt.figure(figsize=(7,4))
+    pixel = data[:, pixelx, pixely]
     plt.plot(wl, pixel)
     plt.plot(wl, reduce_cont(pixel), color='orange')
     plt.xticks(np.arange(min(wl), max(wl), 0.2))
     #plt.xlim(min(wl) + 14*header["CDELT3"], max(wl) - 12*header["CDELT3"])
+    plt.title(f"Spectrum of Pixel ({pixelx}, {pixely})")
     plt.xlim(xlims)
     plt.ylim(-5, 5)
     plt.minorticks_on()
     plt.show()
 
-def avg_3x3(pixel):
-     pixelx, pixely = pixel[0], pixel[1]
+def plot_avg_3x3(pixelx, pixely, xlims=(min(wl), max(wl))):
+    plt.figure(figsize=(7,4))
+    pixel = data[:, pixelx, pixely]
+    plt.plot(wl, pixel)
+    plt.plot(wl, reduce_cont(pixel), color='orange')
+    plt.xticks(np.arange(min(wl), max(wl), 0.2))
+    #plt.xlim(min(wl) + 14*header["CDELT3"], max(wl) - 12*header["CDELT3"])
+    plt.title(f"Spectrum of Pixel ({pixelx}, {pixely})")
+    plt.xlim(xlims)
+    plt.ylim(-5, 5)
+    plt.minorticks_on()
+    plt.show()
+
+def avg_3x3(pixelx, pixely):
      return np.nanmean(np.array((data[:, pixelx-1, pixely - 1], data[:, pixelx-1, pixely], data[:, pixelx, pixely], 
            data[:, pixelx, pixely - 1], data[:, pixelx-1, pixely + 1], data[:, pixelx+1, pixely - 1], 
            data[:, pixelx+1, pixely+1], data[:, pixelx+1, pixely], data[:, pixelx, pixely + 1])), axis=0)
@@ -44,19 +56,18 @@ def create_spectrum_photos():
     for i in range(np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
             if not np.isnan(data[:, i, j]).all():
-                plot_pixel(avg_3x3(i, j))
-                if not os.path.exists(f"C:/Users/redma/Downloads/pixels/{i}_pixels"):
-                    os.mkdir(f"C:/Users/redma/Downloads/pixels/{i}_pixels")
-                plt.savefig(f'C:/Users/redma/Downloads/pixels/{i}_pixels/pixel_{i}-{j}.png')
+                plot_avg_3x3(i, j)
+                if not os.path.exists(f"pixels/{i}_pixels"):
+                    os.mkdir(f"pixels/{i}_pixels")
+                plt.savefig(f'pixels/{i}_pixels/pixel_{i}-{j}.png')
                 plt.close();
+create_spectrum_photos()
 
-
-plot_pixel(data[:, 25, 25])
+plot_pixel(25, 25)
 
 
 '''
-pixx = 24
-pixy = 15
+
 reduce_cont(data[:, pixx, pixy])
 plot_pixel(data[:, pixx, pixy])
 plot_pixel(avg_3x3(pixx, pixy))
