@@ -12,4 +12,73 @@ from astropy.io import fits
 from astropy.stats import sigma_clipped_stats
 
 
-file = fits.open("C:/Users/redma/Downloads/SPT2147-50-sigmaclipped-g395m-s3d_v2.fits")
+file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
+
+header = file[1].header
+data = file[1].data
+wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
+
+
+def plot_pixel(pixel, xlims=(min(wl), max(wl))):
+    plt.figure(figsize=(7,4))
+    plt.plot(wl, pixel)
+    plt.plot(wl, reduce_cont(pixel), color='orange')
+    plt.xticks(np.arange(min(wl), max(wl), 0.2))
+    #plt.xlim(min(wl) + 14*header["CDELT3"], max(wl) - 12*header["CDELT3"])
+    plt.xlim(xlims)
+    plt.ylim(-5, 5)
+    plt.minorticks_on()
+    plt.show()
+
+def avg_3x3(pixel):
+     pixelx, pixely = pixel[0], pixel[1]
+     return np.nanmean(np.array((data[:, pixelx-1, pixely - 1], data[:, pixelx-1, pixely], data[:, pixelx, pixely], 
+           data[:, pixelx, pixely - 1], data[:, pixelx-1, pixely + 1], data[:, pixelx+1, pixely - 1], 
+           data[:, pixelx+1, pixely+1], data[:, pixelx+1, pixely], data[:, pixelx, pixely + 1])), axis=0)
+
+def reduce_cont(pixel):
+    rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
+    return rolling_median
+
+def create_spectrum_photos():
+    for i in range(np.shape(data)[1]):
+        for j in range(np.shape(data)[2]):
+            if not np.isnan(data[:, i, j]).all():
+                plot_pixel(avg_3x3(i, j))
+                if not os.path.exists(f"C:/Users/redma/Downloads/pixels/{i}_pixels"):
+                    os.mkdir(f"C:/Users/redma/Downloads/pixels/{i}_pixels")
+                plt.savefig(f'C:/Users/redma/Downloads/pixels/{i}_pixels/pixel_{i}-{j}.png')
+                plt.close();
+
+
+plot_pixel(data[:, 25, 25])
+
+
+'''
+pixx = 24
+pixy = 15
+reduce_cont(data[:, pixx, pixy])
+plot_pixel(data[:, pixx, pixy])
+plot_pixel(avg_3x3(pixx, pixy))
+
+
+arr1 = avg_3x3(pixx, pixy)
+
+producand1 = np.full_like(data[:, pixx, pixy], -1)
+
+reduced_cont = reduce_cont(data[:, pixx, pixy])
+producand2 = np.array(reduced_cont)
+
+arr2 = np.nanprod(np.dstack((producand1, producand2)), axis=2)
+stacked_array = np.dstack((arr1, arr2))
+nansumed = np.nansum(stacked_array, 2)
+plot_pixel(nansumed[0])
+
+plot_pixel(data[:, pixx, pixy], xlims=(3.06, 3.2))
+
+plt.figure(figsize=(7,4))
+plt.plot(wl, reduce_cont(data[:, pixx, pixy]), color='orange')
+
+plt.figure(figsize=(5, 5))
+plt.plot()
+'''
