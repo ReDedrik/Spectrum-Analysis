@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import matplotlib.image as mpimg
+from matplotlib import animation
 #import astropy.units as units
 #from astropy.stats import SigmaClip
 #from astropy.visualization import simple_norm
@@ -15,6 +17,8 @@ file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 header = file[1].header
 data = file[1].data
 wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
+
+pixx = 22
 
 
 def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
@@ -51,8 +55,6 @@ def reduce_cont(pixel):
     rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
     return rolling_median
 
-
-
 def create_spectrum_photos():
     for i in range(np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
@@ -60,13 +62,24 @@ def create_spectrum_photos():
                 plot_avg_3x3(i, j)
                 if not os.path.exists(f"pixels/{i}_pixels"):
                     os.mkdir(f"pixels/{i}_pixels")
-                plt.savefig(f'pixels/{i}_pixels/pixel_{i}-{j}.png')
+                plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
                 plt.close();
-create_spectrum_photos()
+
+#create_spectrum_photos()
+
+def init():
+    imobj.set_data(np.zeros(np.shape(data[:, pixx, :])))
+    return imobj
+
+
 
 plot_pixel(25, 25)
 
+fig = plt.figure()
+ax = plt.gca()
+imobj = ax.imshow(np.zeros(np.shape(data[:, pixx, :])), origin='lower', alpha=1.0, zorder=1, aspect=1)
 
+#anim = animation.FuncAnimation(fig, update, int_func=init, repeat=True, frames=range()))
 '''
 
 reduce_cont(data[:, pixx, pixy])
