@@ -10,7 +10,7 @@ class Application(tk.Tk):
         self.resizable(width=False, height=False)
         self.current_slide = tk.Label(self)
         self.current_slide.pack()
-        self.duration_ms = 200
+        self.duration_ms = 500
 
     def set_image_directory(self, path):
         from pathlib import Path
@@ -24,7 +24,9 @@ class Application(tk.Tk):
         name, self.next_image = next(self.images)
         self.current_slide.config(image=self.next_image)
         self.title(name)
-        self.after(self.duration_ms, self.display_next_slide)
+        print(self.images)
+        self.after(self.duration_ms, self.display_next_slide)  
+        
 
     def start(self):
         self.display_next_slide()
@@ -34,3 +36,5 @@ application = Application()
 application.set_image_directory("28_pixels")
 application.start()
 application.mainloop()
+
+
