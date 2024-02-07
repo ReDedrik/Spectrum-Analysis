@@ -19,8 +19,18 @@ data = file[1].data
 wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
 redshift = 3.7604
 
-pixx = 22
-
+def pixel_comparison(*args):
+    fig, ax = plt.subplots(len(args), sharey = True, figsize=(7, len(args) * 4))
+    for i in range(len(args)):
+        ax[i].plot(wl, args[i])
+        ax[i].plot(wl, reduce_cont(args[i]), color='orange')
+        ax[i].set_xticks(np.arange(min(wl), max(wl), 0.2))
+        ax[i].set_title(f'Pixel Iter. {i}')
+        ax[i].set_xlim((min(wl), max(wl)))
+        ax[i].set_ylim(-3, 3)
+        ax[i].minorticks_on()
+    plt.show()
+        
 
 def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
     plt.figure(figsize=(7,4))
@@ -33,8 +43,9 @@ def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
     plt.xlim(xlims)
     plt.ylim(-5, 5)
     plt.minorticks_on()
-    plt.show()
+    #plt.show()
 
+# NOT WORKING RN
 def plot_avg_3x3(pixelx, pixely, xlims=(min(wl), max(wl))):
     plt.figure(figsize=(7,4))
     pixel = data[:, pixelx, pixely]
@@ -63,7 +74,8 @@ def create_spectrum_photos():
     for i in range(np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
             if not np.isnan(data[:, i, j]).all():
-                plot_avg_3x3(i, j)
+                #plot_avg_3x3(i, j)
+                pixel_comparison(data[:, i, j], avg_3x3(i, j))
                 if not os.path.exists(f"pixels/{i}_pixels"):
                     os.mkdir(f"pixels/{i}_pixels")
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
@@ -72,26 +84,14 @@ def create_spectrum_photos():
 
 #create_spectrum_photos()
 
-def init():
-    imobj.set_data(np.zeros(np.shape(data[:, pixx, :])))
-    return imobj
+pixx, pixy = 25, 18
 
 
+#plot_pixel(pixx, pixy)
+#plot_avg_3x3(pixx, pixy)
 
-plot_pixel(25, 25)
-
-fig = plt.figure()
-ax = plt.gca()
-imobj = ax.imshow(np.zeros(np.shape(data[:, pixx, :])), origin='lower', alpha=1.0, zorder=1, aspect=1)
-
-#anim = animation.FuncAnimation(fig, update, int_func=init, repeat=True, frames=range()))
+pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy))
 '''
-
-reduce_cont(data[:, pixx, pixy])
-plot_pixel(data[:, pixx, pixy])
-plot_pixel(avg_3x3(pixx, pixy))
-
-
 arr1 = avg_3x3(pixx, pixy)
 
 producand1 = np.full_like(data[:, pixx, pixy], -1)
@@ -112,3 +112,7 @@ plt.plot(wl, reduce_cont(data[:, pixx, pixy]), color='orange')
 plt.figure(figsize=(5, 5))
 plt.plot()
 '''
+
+# should give higher weights to center pixel when taking surrounding average?
+# subtract continuum for individual pixels, or integrated photo continuum?
+# ISSUE: when taking average of surrounding pixels on pixels that have lots of NaN's, screws up data
