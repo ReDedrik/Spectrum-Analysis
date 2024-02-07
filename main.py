@@ -17,6 +17,7 @@ file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 header = file[1].header
 data = file[1].data
 wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
+redshift = 3.7604
 
 pixx = 22
 
@@ -55,6 +56,9 @@ def reduce_cont(pixel):
     rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
     return rolling_median
 
+def reduce_cont_integrated(pixel):
+    pass
+
 def create_spectrum_photos():
     for i in range(np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
@@ -64,6 +68,7 @@ def create_spectrum_photos():
                     os.mkdir(f"pixels/{i}_pixels")
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
                 plt.close();
+
 
 #create_spectrum_photos()
 
