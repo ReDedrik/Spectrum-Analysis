@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import matplotlib.image as mpimg
 from matplotlib import animation
+import shutil
 #import astropy.units as units
 #from astropy.stats import SigmaClip
 #from astropy.visualization import simple_norm
@@ -17,7 +18,7 @@ file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 header = file[1].header
 data = file[1].data
 wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
-redshift = 3.7604
+z = 3.7604
 
 def pixel_comparison(*args):
     fig, ax = plt.subplots(len(args), sharey = True, figsize=(7, len(args) * 4))
@@ -29,7 +30,7 @@ def pixel_comparison(*args):
         ax[i].set_xlim((min(wl), max(wl)))
         ax[i].set_ylim(-3, 3)
         ax[i].minorticks_on()
-    plt.show()
+    #plt.show()
         
 
 def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
@@ -70,7 +71,17 @@ def reduce_cont(pixel):
 def reduce_cont_integrated(pixel):
     pass
 
+def clear_photos():
+    sub_dir = [i[0] for i in os.walk("pixels")]
+    print(sub_dir)
+    for i in sub_dir[1:]:
+        shutil.rmtree(i, ignore_errors=True)
+
+def correct_redshift():
+    wl_emitted = wl / (1+z)
+
 def create_spectrum_photos():
+    clear_photos()
     for i in range(np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
             if not np.isnan(data[:, i, j]).all():
@@ -82,6 +93,7 @@ def create_spectrum_photos():
                 plt.close();
 
 
+
 #create_spectrum_photos()
 
 pixx, pixy = 25, 18
@@ -90,7 +102,7 @@ pixx, pixy = 25, 18
 #plot_pixel(pixx, pixy)
 #plot_avg_3x3(pixx, pixy)
 
-pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy))
+#pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy))
 '''
 arr1 = avg_3x3(pixx, pixy)
 
