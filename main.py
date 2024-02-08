@@ -1,17 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import os
 import matplotlib.image as mpimg
-from matplotlib import animation
-import shutil
+#from matplotlib import animation
 #import astropy.units as units
 #from astropy.stats import SigmaClip
 #from astropy.visualization import simple_norm
 #from astropy.convolution import convolve
 from astropy.io import fits
 #from astropy.stats import sigma_clipped_stats
-
 
 file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 
@@ -22,7 +19,7 @@ z = 3.7604
 wl_emitted = wl_emitted / (1+z)
 
 # working
-def pixel_comparison(*args, xloc = '-', yloc = '-'):
+def pixel_comparison(*args, loc=('-', '-')):
     fig, ax = plt.subplots(len(args), sharey = True, figsize=(7, len(args) * 4))
     for i in range(len(args)):
         ax[i].plot(wl_emitted, args[i])
@@ -30,9 +27,16 @@ def pixel_comparison(*args, xloc = '-', yloc = '-'):
         ax[i].set_xticks(np.linspace(min(wl_emitted), max(wl_emitted), 10))
         ax[i].set_title(f'Pixel Iter. {i}')
         ax[i].set_xlim((min(wl_emitted), max(wl_emitted)))
-        ax[i].set_ylim(-3, 3)
+        ax[i].set_ylim(-1, 3)
         ax[i].minorticks_on()
-    fig.suptitle(f'Pixel at ({xloc}, {yloc})')
+        ax[i].axvline(0.6562, linestyle='dotted', color='red')
+        ax[i].axvline(0.6583, linestyle='dotted', color='red')
+        ax[i].axvline(0.9531, linestyle='dotted', color='red')
+        ax[i].axvline(1.083, linestyle='dotted', color='red')   
+        ax[i].axvline(0.9068, linestyle='dotted', color='red')
+        ax[i].axvline(0.6730, linestyle='dotted', color='red')
+    #ax.vlines(0.6562, 0.6583, 0.9531, 1.083, 0.9068, 0.6730)
+    fig.suptitle(f'Pixel at ({loc[0]}, {loc[1]})')
     plt.show()
         
 # ALSO NOT WORKING RN
@@ -42,7 +46,6 @@ def plot_pixel(pixelx, pixely, xlims=(min(wl_emitted), max(wl_emitted))):
     plt.plot(wl_emitted, pixel)
     plt.plot(wl_emitted, reduce_cont(pixel), color='orange')
     plt.xticks(np.arange(min(wl_emitted), max(wl_emitted), 0.02))
-    #plt.xlim(min(wl_emitted) + 14*header["CDELT3"], max(wl_emitted) - 12*header["CDELT3"])
     plt.title(f"Spectrum of Pixel ({pixelx}, {pixely})")
     plt.xlim(xlims)
     plt.ylim(-5, 5)
@@ -56,7 +59,6 @@ def plot_avg_3x3(pixelx, pixely, xlims=(min(wl_emitted), max(wl_emitted))):
     plt.plot(wl_emitted, pixel)
     plt.plot(wl_emitted, reduce_cont(pixel), color='orange')
     plt.xticks(np.arange(min(wl_emitted), max(wl_emitted), 0.02))
-    #plt.xlim(min(wl_emitted) + 14*header["CDELT3"], max(wl_emitted) - 12*header["CDELT3"])
     plt.title(f"Spectrum of Pixel ({pixelx}, {pixely})")
     plt.xlim(xlims)
     plt.ylim(-5, 5)
@@ -74,25 +76,6 @@ def reduce_cont(pixel):
 def reduce_cont_integrated(pixel):
     pass
 
-def clear_photos():
-    sub_dir = [i[0] for i in os.walk("pixels")]
-    print(sub_dir)
-    for i in sub_dir[1:]:
-        shutil.rmtree(i, ignore_errors=True)
-
-def create_spectrum_photos():
-    clear_photos()
-    for i in range(np.shape(data)[1]):
-        for j in range(np.shape(data)[2]):
-            if not np.isnan(data[:, i, j]).all():
-                #plot_avg_3x3(i, j)
-                pixel_comparison(data[:, i, j], avg_3x3(i, j), xloc=i, yloc=j)
-                if not os.path.exists(f"pixels/{i}_pixels"):
-                    os.mkdir(f"pixels/{i}_pixels")
-                plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
-                plt.close();
-
-
 
 #create_spectrum_photos()
 
@@ -102,7 +85,11 @@ pixx, pixy = 25, 18
 #plot_pixel(pixx, pixy)
 #plot_avg_3x3(pixx, pixy)
 
-pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy))
+pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy), loc = (pixx, pixy))
+
+
+# This code subtracted the continuum but kinda sucks and i dont like it
+# but best i currently have
 '''
 arr1 = avg_3x3(pixx, pixy)
 
