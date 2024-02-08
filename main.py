@@ -17,29 +17,32 @@ file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 
 header = file[1].header
 data = file[1].data
-wl = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
+wl_emitted = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
 z = 3.7604
+wl_emitted = wl_emitted / (1+z)
 
-def pixel_comparison(*args):
+# working
+def pixel_comparison(*args, xloc = '-', yloc = '-'):
     fig, ax = plt.subplots(len(args), sharey = True, figsize=(7, len(args) * 4))
     for i in range(len(args)):
-        ax[i].plot(wl, args[i])
-        ax[i].plot(wl, reduce_cont(args[i]), color='orange')
-        ax[i].set_xticks(np.arange(min(wl), max(wl), 0.2))
+        ax[i].plot(wl_emitted, args[i])
+        ax[i].plot(wl_emitted, reduce_cont(args[i]), color='orange')
+        ax[i].set_xticks(np.linspace(min(wl_emitted), max(wl_emitted), 10))
         ax[i].set_title(f'Pixel Iter. {i}')
-        ax[i].set_xlim((min(wl), max(wl)))
+        ax[i].set_xlim((min(wl_emitted), max(wl_emitted)))
         ax[i].set_ylim(-3, 3)
         ax[i].minorticks_on()
-    #plt.show()
+    fig.suptitle(f'Pixel at ({xloc}, {yloc})')
+    plt.show()
         
-
-def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
+# ALSO NOT WORKING RN
+def plot_pixel(pixelx, pixely, xlims=(min(wl_emitted), max(wl_emitted))):
     plt.figure(figsize=(7,4))
     pixel = data[:, pixelx, pixely]
-    plt.plot(wl, pixel)
-    plt.plot(wl, reduce_cont(pixel), color='orange')
-    plt.xticks(np.arange(min(wl), max(wl), 0.2))
-    #plt.xlim(min(wl) + 14*header["CDELT3"], max(wl) - 12*header["CDELT3"])
+    plt.plot(wl_emitted, pixel)
+    plt.plot(wl_emitted, reduce_cont(pixel), color='orange')
+    plt.xticks(np.arange(min(wl_emitted), max(wl_emitted), 0.02))
+    #plt.xlim(min(wl_emitted) + 14*header["CDELT3"], max(wl_emitted) - 12*header["CDELT3"])
     plt.title(f"Spectrum of Pixel ({pixelx}, {pixely})")
     plt.xlim(xlims)
     plt.ylim(-5, 5)
@@ -47,13 +50,13 @@ def plot_pixel(pixelx, pixely, xlims=(min(wl), max(wl))):
     #plt.show()
 
 # NOT WORKING RN
-def plot_avg_3x3(pixelx, pixely, xlims=(min(wl), max(wl))):
+def plot_avg_3x3(pixelx, pixely, xlims=(min(wl_emitted), max(wl_emitted))):
     plt.figure(figsize=(7,4))
     pixel = data[:, pixelx, pixely]
-    plt.plot(wl, pixel)
-    plt.plot(wl, reduce_cont(pixel), color='orange')
-    plt.xticks(np.arange(min(wl), max(wl), 0.2))
-    #plt.xlim(min(wl) + 14*header["CDELT3"], max(wl) - 12*header["CDELT3"])
+    plt.plot(wl_emitted, pixel)
+    plt.plot(wl_emitted, reduce_cont(pixel), color='orange')
+    plt.xticks(np.arange(min(wl_emitted), max(wl_emitted), 0.02))
+    #plt.xlim(min(wl_emitted) + 14*header["CDELT3"], max(wl_emitted) - 12*header["CDELT3"])
     plt.title(f"Spectrum of Pixel ({pixelx}, {pixely})")
     plt.xlim(xlims)
     plt.ylim(-5, 5)
@@ -77,16 +80,13 @@ def clear_photos():
     for i in sub_dir[1:]:
         shutil.rmtree(i, ignore_errors=True)
 
-def correct_redshift():
-    wl_emitted = wl / (1+z)
-
 def create_spectrum_photos():
     clear_photos()
     for i in range(np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
             if not np.isnan(data[:, i, j]).all():
                 #plot_avg_3x3(i, j)
-                pixel_comparison(data[:, i, j], avg_3x3(i, j))
+                pixel_comparison(data[:, i, j], avg_3x3(i, j), xloc=i, yloc=j)
                 if not os.path.exists(f"pixels/{i}_pixels"):
                     os.mkdir(f"pixels/{i}_pixels")
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
@@ -102,7 +102,7 @@ pixx, pixy = 25, 18
 #plot_pixel(pixx, pixy)
 #plot_avg_3x3(pixx, pixy)
 
-#pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy))
+pixel_comparison(data[:, pixx, pixy], avg_3x3(pixx, pixy))
 '''
 arr1 = avg_3x3(pixx, pixy)
 
@@ -119,7 +119,7 @@ plot_pixel(nansumed[0])
 plot_pixel(data[:, pixx, pixy], xlims=(3.06, 3.2))
 
 plt.figure(figsize=(7,4))
-plt.plot(wl, reduce_cont(data[:, pixx, pixy]), color='orange')
+plt.plot(wl_emitted, reduce_cont(data[:, pixx, pixy]), color='orange')
 
 plt.figure(figsize=(5, 5))
 plt.plot()
