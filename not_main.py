@@ -51,7 +51,8 @@ def reduce_cont(pixel):
     rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
     return rolling_median
 
-def gaussian3(x, a1, b1, c1, a2, b2, c2, a3, b3, c3, C):
+def gaussian3(x, *args):
+     a1, b1, c1, a2, b2, c2, a3, b3, c3, C = args
      f1 = a1 * np.exp(-1*((x - b1)**2) / (2*c1**2))
      f2 = a2 * np.exp(-1*((x - b2)**2) / (2*c2**2))
      f3 = a3 * np.exp(-1*((x - b3)**2) / (2*c3**2))
