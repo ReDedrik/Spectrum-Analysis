@@ -1,7 +1,7 @@
 import shutil
 import numpy as np
 import os
-from not_main import *
+from data_handling import *
 import matplotlib.pyplot as plt
 
 def pixel_comparison(*args, loc=('-', '-'), xlims=(min(wl_emitted), max(wl_emitted)), ylims=(-1, 3)):
