@@ -5,8 +5,9 @@ warnings.filterwarnings('ignore')
 
 
 
-pixx, pixy = 26, 18 #25, 18 # 25,15 BLOWS
+pixx, pixy = 25, 16 #26, 18 #25, 18 # 25,15 BLOWS
 pixel = weighted_avg_5x5(pixx, pixy, 2)
+unc = weighted_unc_5x5(pixx, pixy, 2)
 idx1, val1 = find_nearest(wl_emitted, 0.66)# 0.65325
 idx2, val2 = find_nearest(wl_emitted, 0.685)# 0.66025
 
@@ -15,6 +16,7 @@ max_SII_2 = local_max(pixel, 0.67275, 0.675)
 C = 0.4
 
 x, y = wl_emitted[idx1:idx2+1], pixel[idx1:idx2+1]
+dy = unc[idx1:idx2+1]
 #create_spectrum_photos()
 #plot_pixel(pixx, pixy)
 #plot_avg_3x3(pixx, pixy) 67254
@@ -37,17 +39,18 @@ bounds = [[max_SII_1 - guess[-1] - 0.003,  0,  0,
           [max_SII_1 - guess[-1] + 0.1, 10, 10, 
            max_SII_2 - guess[-1] + 0.1, 10, 10, 
            0,  0.67255,   0.001,  5, 1]]
-bounds = [[max_SII_1-0.01,  0,  0,
+bounds = [[max_SII_1-0.001,  0,  0,
            max_SII_2-0.000001,  0,  0,
            -10, 0.67253, 0.00006, -5, 0], 
-          [max_SII_1+0.01, 10, 10, 
+          [max_SII_1+0.001, 10, 10, 
            max_SII_2 + 0.1, 10, 10, 
            0,  0.67255,   0.001,  5, 1]]
 
-popt, pcov = curve_fit(gaussian3, xdata=x, ydata=y, p0 = guess, bounds=bounds, maxfev= 1000000)
+popt, pcov = curve_fit(gaussian3, xdata=x, ydata=y, sigma=dy, p0 = guess, bounds=bounds, maxfev= 1000000)
 print(popt)
-plt.step(wl_emitted[idx1:idx2], weighted_avg_5x5(pixx, pixy, 2)[idx1:idx2], where='mid')
-plt.plot(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 100000), gaussian3(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 100000), *popt), ls='--')
+plt.step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='pre')
+plt.fill_between(wl_emitted[idx1:idx2], pixel[idx1:idx2] - unc[idx1:idx2], pixel[idx1:idx2] + unc[idx1:idx2], alpha=0.2)
+plt.plot(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), gaussian3(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), *popt), ls='--')
 
 #pixel_comparison(data[:, pixx, pixy], avg_5x5(pixx, pixy), weighted_avg_5x5(pixx, pixy, 10), loc = (pixx, pixy), xlims=(0.64, 0.68), ylims=(-0.1, 2))
 #pixel_comparison(weighted_avg_5x5(pixx, pixy, 2), weighted_avg_5x5(pixx, pixy, 5), weighted_avg_5x5(pixx, pixy, 20), loc = (pixx, pixy), xlims=(0.64, 0.68), ylims=(-0.1, 2))
