@@ -67,7 +67,7 @@ def reduce_cont(pixel):
     return rolling_median
 
 def gaussian3(x, *args):
-     amp1, pos1, width1, amp2, pos2, width2, amp3, pos3, width3, m, C = args
+     amp1, width1, amp2, width2, amp3, pos3, width3, m, C = args
      amp1 = amp1 - m*x - C
      amp2 = amp2 - m*x - C
      f1 = amp1 * np.exp(-1*((x - 0.67166)**2) / (2*width1**2))# n2-1 is 0.654985
@@ -76,8 +76,18 @@ def gaussian3(x, *args):
      broad = 0 # a4 * np.exp(-1*((x - b4)**2) / (2*c4**2))
      return f1 + f2 + 0 + broad + C + m*x
 
-def gaussian2(x, *args):
-     amp1, pos1, width1, amp2, pos2, width2, m, C = args
+def gaussian2_diff_wid(x, *args):
+     amp1, width1, amp2, width2, m, C = args
+     amp1 = amp1 - m*x - C
+     amp2 = amp2 - m*x - C
+     f1 = amp1 * np.exp(-1*((x - 0.67166)**2) / (2*width1**2))
+     f2 = amp2 * np.exp(-1*((x - 0.6731)**2) / (2*width2**2))
+     return f1 + f2 + m*x + C
+
+def gaussian2_same_wid(x, *args):
+     amp1, width1, amp2, width2, m, C = args
+     amp1 = amp1 - m*x - C
+     amp2 = amp2 - m*x - C
      f1 = amp1 * np.exp(-1*((x - 0.67166)**2) / (2*width1**2))
      f2 = amp2 * np.exp(-1*((x - 0.6731)**2) / (2*width1**2))
      return f1 + f2 + m*x + C

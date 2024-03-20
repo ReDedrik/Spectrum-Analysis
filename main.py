@@ -6,8 +6,8 @@ warnings.filterwarnings('ignore')
 
 
 pixx, pixy = 25, 18 #26, 18 #25, 18 # 25,15 BLOWS
-pixel = weighted_avg_5x5(pixx, pixy, 2)
-unc = weighted_unc_5x5(pixx, pixy, 2)
+pixel = weighted_avg_5x5(pixx, pixy, 1)
+unc = weighted_unc_5x5(pixx, pixy, 1)
 idx1, val1 = find_nearest(wl_emitted, 0.66)# 0.65325
 idx2, val2 = find_nearest(wl_emitted, 0.685)# 0.66025
 
@@ -25,13 +25,12 @@ guess = (np.nanmax(pixel[find_nearest(wl_emitted, 0.65433)[0]:find_nearest(wl_em
          np.nanmax(pixel[find_nearest(wl_emitted, 0.65770)[0]:find_nearest(wl_emitted, 0.65975)[0]]), 1, 0.00070, 
          1, 1, 1, 0, 0.3) 
 
-guess = (np.nanmax(pixel[find_nearest(wl_emitted, 0.6709)[0]:find_nearest(wl_emitted, 0.6726)[0]]), 1, 0.0002,
-         np.nanmax(pixel[find_nearest(wl_emitted, 0.6726)[0]:find_nearest(wl_emitted, 0.675)[0]]), 1, 0.0002, 
+guess = (np.nanmax(pixel[find_nearest(wl_emitted, 0.6709)[0]:find_nearest(wl_emitted, 0.6726)[0]]), 0.0002,
+         np.nanmax(pixel[find_nearest(wl_emitted, 0.6726)[0]:find_nearest(wl_emitted, 0.675)[0]]), 0.0002, 
          0, 0.2)
 
-guess = (max_SII_1, 1, 0.0002,
-         max_SII_2, 1, 0.0002, 
-         -0.2, 0.67254, 0.0002,
+guess = (max_SII_1, 0.0002,
+         max_SII_2, 0.0002,
          0, C)
 
 bounds = [[max_SII_1 - guess[-1] - 0.003,  0,  0,
@@ -41,18 +40,18 @@ bounds = [[max_SII_1 - guess[-1] - 0.003,  0,  0,
            max_SII_2 - guess[-1] + 0.1, 10, 10, 
            0,  0.67255,   0.001,  5, 1]]
 
-bounds = [[max_SII_1-0.001,  0,  0,
-           max_SII_2-0.001,  0,  0,
-           -10, 0.67253, 0.00006, -5, 0], 
-          [max_SII_1+0.001, 10, 10, 
-           max_SII_2 + 0.001, 10, 10, 
-           0,  0.67255,   0.001,  5, 1]]
+bounds = [[max_SII_1-0.1, 0,
+           max_SII_2-0.3, 0, -5, 0], 
+          [max_SII_1+0.1, 10, 
+           max_SII_2 + 0.1, 10, 5, 1]]
 
-popt, pcov = curve_fit(gaussian3, xdata=x, ydata=y, sigma=dy, p0 = guess, bounds=bounds, maxfev= 1000000)
-print(popt)
-plt.step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='pre')
-plt.fill_between(wl_emitted[idx1:idx2], pixel[idx1:idx2] - unc[idx1:idx2], pixel[idx1:idx2] + unc[idx1:idx2], alpha=0.2)
-plt.plot(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), gaussian3(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), *popt), ls='--')
+popt, pcov = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy, p0 = guess, bounds=bounds, maxfev= 1000000)
+step_plot(pixel, idx1, idx2, unc, popt)
+popt, pcov = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess, bounds=bounds, maxfev= 1000000)
+step_plot(pixel, idx1, idx2, unc, popt)
+
+
+
 
 lambda6716, lambda6731 = popt[0], popt[3]
 m, C = popt[-2], popt[-1]
@@ -66,5 +65,5 @@ plt.show()
 
 #show_img_pixel(data[50], pixx, pixy)
 
-
+#plot residuals, plot different parameters (change widths, fit more continuum, wider range)
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)

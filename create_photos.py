@@ -46,3 +46,10 @@ def show_img_pixel(pixel, pixx, pixy):
      plt.imshow(pixel, origin='lower')
      plt.scatter([pixx], [pixy], color='red', s=10)
      plt.show()
+
+def step_plot(pixel, idx1, idx2, unc, popt):
+    plt.step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='pre')
+    plt.fill_between(wl_emitted[idx1:idx2], pixel[idx1:idx2] - unc[idx1:idx2], pixel[idx1:idx2] + unc[idx1:idx2], alpha=0.2)
+    plt.plot(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), gaussian2(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), *popt), ls='--')
+    plt.show()
+
