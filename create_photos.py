@@ -41,3 +41,8 @@ def create_spectrum_photos():
                     os.mkdir(f"pixels/{i}_pixels")
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
                 plt.close();
+
+def show_img_pixel(pixel, pixx, pixy):
+     plt.imshow(pixel, origin='lower')
+     plt.scatter([pixx], [pixy], color='red', s=10)
+     plt.show()
