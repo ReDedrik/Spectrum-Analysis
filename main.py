@@ -5,12 +5,12 @@ warnings.filterwarnings('ignore')
 
 
 
-pixx, pixy = 28, 19 #26, 18 #25, 18 # 25,15 BLOWS
+pixx, pixy = 27, 20 #26, 18 #25, 18 # 25,15 BLOWS
 weight = 1
 pixel = weighted_avg_5x5(pixx, pixy, weight)
 unc = weighted_unc_5x5(pixx, pixy, weight)
 idx1, val1 = find_nearest(wl_emitted, 0.66)# 0.65325
-idx2, val2 = find_nearest(wl_emitted, 0.685)# 0.66025
+idx2, val2 = find_nearest(wl_emitted, 0.69)# 0.66025
 
 max_SII_1 = local_max(pixel, 0.6709, 0.67275)
 max_SII_2 = local_max(pixel, 0.67275, 0.675)
@@ -50,13 +50,39 @@ popt_diff, pcov_diff = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy,
 #step_plot(pixel, idx1, idx2, unc, popt_diff, False)
 popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
 
+
 #popt_reduced_same, pcov_reduced_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_reduced_same, bounds=bounds_reduced_same, maxfev= 1000000)
 
 #popt_reduced_diff, pcov_reduced_diff = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_reduced_diff, bounds=bounds_reduced_diff, maxfev= 1000000)
-print(popt_same)
+#print(popt_same)
 #step_plot(pixel, idx1, idx2, unc, popt_same, True)
 
-large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], ['Different Widths', 'Same Widths'], [False, True])
+large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
+
+cont = reduce_cont(pixel)[idx1:idx2+1]
+y = y - cont
+guess_reduced = (max_SII_1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0.00045,
+         max_SII_2 - cont[find_nearest(wl_emitted, 0.6731)[0]],
+         0, 0)
+bounds_reduced = [[max_SII_1-0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0,
+           max_SII_2-0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], -5, 0], 
+          [max_SII_1+0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 10, 
+           max_SII_2 + 0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], 5, 3]]
+
+guess_reduced_diff = (max_SII_1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0.00045,
+         max_SII_2 - cont[find_nearest(wl_emitted, 0.6731)[0]], 0.00045,
+         0, 0)
+bounds_reduced_diff = [[max_SII_1-0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0,
+           max_SII_2-0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], 0, -5, 0], 
+          [max_SII_1+0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 10, 
+           max_SII_2 + 0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], 10, 5, 3]]
+
+popt_reduced_cont, pcov_reduced_cont = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_reduced, bounds=bounds_reduced)
+popt_reduced_cont_diff, pcov_reduced_cont_diff = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_reduced_diff, bounds=bounds_reduced_diff)
+
+#large_step_plot(pixel - reduce_cont(pixel), idx1, idx2+1, unc, [popt_reduced_cont, popt_reduced_cont_diff], [pcov_reduced_cont, pcov_reduced_cont_diff], ['Same Widths / Reduced Cont.', 'Different Widths / Reduced Cont.'], [True, False])
+
+
 
 #pixel_comparison(pixel, pixel)
 #lambda6716, lambda6731 = popt[0], popt[3]
@@ -67,7 +93,6 @@ large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], ['Different Widt
 # this value?
 #print((lambda6716 - pixel[idx1] * m - C) / (lambda6731 - pixel[idx1] * m - C))
 # or a different value without taking into account m and C
-plt.show()
 
 #show_img_pixel(data[50], pixx, pixy)
 

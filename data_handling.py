@@ -4,6 +4,8 @@ import pandas as pd
 from scipy.optimize import curve_fit
 import scienceplots
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gs
+
 plt.style.use('science')
 plt.rc('lines', linewidth=2)
 file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
