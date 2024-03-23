@@ -30,7 +30,6 @@ guess_same = (max_SII_1, 0.00045,
          max_SII_2,
          0, C)
 
-#guess_reduced_same = (max)
 
 bounds_diff = [[max_SII_1-0.1, 0,
            max_SII_2-0.3, 0, -5, 0], 
@@ -84,7 +83,7 @@ popt_reduced_cont_diff, pcov_reduced_cont_diff = curve_fit(gaussian2_diff_wid, x
 
 
 
-#pixel_comparison(pixel, pixel)
+#pixel_comparison(pixel - reduce_cont(pixel), pixel)
 #lambda6716, lambda6731 = popt[0], popt[3]
 #m, C = popt[-2], popt[-1]
 # should i be restricting the amplitude so much

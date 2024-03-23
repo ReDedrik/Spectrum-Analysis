@@ -65,7 +65,7 @@ def large_step_plot(*args):
     fig, ax = plt.subplots(2, len(popts), figsize=(len(popts) * 7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
     pos = [0.67166, 0.6731]
     for i in range(len(popts)):
-        ax[0][i].step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='mid')
+        ax[0][i].step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='pre')
         ax[0][i].fill_between(wl_emitted[idx1:idx2], pixel[idx1:idx2] - unc[idx1:idx2], pixel[idx1:idx2] + unc[idx1:idx2], alpha=0.2)
         gauss = gaussian2_same_wid
         if not same_widths[i]:
@@ -80,17 +80,51 @@ def large_step_plot(*args):
         ax[0][i].tick_params(axis='both', labelsize= 16)
         amp6716 = str(round(popts[i][0] - popts[i][-2] * 0.67166 - popts[i][-1], 4))
         amp_err6716 = str(round(np.sqrt(pcovs[i][0][0]), 4))
-        width6716 = str(round(popts[i][1], 4))
-        width_err6716 = str(round(pcovs[i][1][1], 4))
-        
+        width6716 = str(round(popts[i][1] * 10000, 4))
+        width_err6716 = str(round(pcovs[i][1][1] * 10000, 4))
+        m6716 = round(popts[i][-2], 3)
+        m_err6716 = round(pcovs[i][-2][-2], 3)
+        C6716 = round(popts[i][-1], 3)
+        C_err6716 = round(pcovs[i][-1][-1], 3)
+
         amp6731 = str(round(popts[i][2]- popts[i][-2] * 0.6731 - popts[i][-1], 4))
         amp_err6731 = str(round(np.sqrt(pcovs[i][2][2]), 4))
-        width6731 = str(round(popts[i][3], 4))
-        width_err6731 = str(round(pcovs[i][3][3], 4))
+        if same_widths[i]:
+            width6731 = width6716
+            width_err6731 = width_err6716
+        else:
+            width6731 = str(round(popts[i][3] * 10000 , 4))
+            width_err6731 = str(round(pcovs[i][3][3] * 10000, 4))
+        m6731 = round(popts[i][-2], 3)
+        m_err6731 = round(pcovs[i][-2][-2], 3)
+        C6731 = round(popts[i][-1], 3)
+        C_err6731 = round(pcovs[i][-1][-1], 3)
 
-        equation = f'{amp6716} \\pm {amp_err6716}~\\mathrm{{exp}}\\left( -\\frac{{(x - 0.67166)^2}}{{({width6716} \\pm {width_err6716})^2}} \\right)'
-        fig.text(0.35 * i + 0.35, 0.8, f"m = {round(popts[i][-2], 4)}, C = {round(popts[i][-1], 4)}")
-        fig.text(0.35 * i + 0.35, 0.4, '$%s$'%equation, fontsize=16, ha='center', va='center')
+
+        eq_font = 11
+        offset = 0.13
+        multiplier = 0.422
+        # 6716 params
+        #m_eq = f"\\mathrm{{m}} = {m6716} \\pm {m_err6716}"
+        #C_eq = f"\\mathrm{{C}} = {C6716} \\pm {C_err6716}"
+        amp_eq = f"\\mathrm{{Ampl.}} = {amp6716} \\pm {amp_err6716}"
+        width_eq = f"\\mathrm{{Width}} = {width6716} \\pm {width_err6716}"
+        fig.text(multiplier * i + offset, 0.8, "$%s$"%amp_eq, fontsize=eq_font, ha = 'left', va='center')
+        fig.text(multiplier * i + offset, 0.775, "$%s$"%width_eq, fontsize=eq_font, ha = 'left', va='center')
+        #fig.text(multiplier * i + offset, 0.75, "$%s$"%m_eq, fontsize=eq_font, ha = 'left', va='center')
+        #fig.text(multiplier * i + offset, 0.725, "$%s$"%C_eq, fontsize=eq_font, ha = 'left', va='center')
+
+        offset = 0.35
+        multiplier = 0.422
+        # 6731 params
+        #m_eq = f"\\mathrm{{m}} = {m6731} \\pm {m_err6731}"
+        #C_eq = f"\\mathrm{{C}} = {C6731} \\pm {C_err6731}"
+        amp_eq = f"\\mathrm{{Ampl.}} = {amp6731} \\pm {amp_err6731}"
+        width_eq = f"\\mathrm{{Width}} = {width6731} \\pm {width_err6731}"
+        fig.text(multiplier * i + offset, 0.8, "$%s$"%amp_eq, fontsize=eq_font, ha = 'left', va='center')
+        fig.text(multiplier * i + offset, 0.775, "$%s$"%width_eq, fontsize=eq_font, ha = 'left', va='center')
+        #fig.text(multiplier * i + offset, 0.75, "$%s$"%m_eq, fontsize=eq_font, ha = 'left', va='center')
+        #fig.text(multiplier * i + offset, 0.725, "$%s$"%C_eq, fontsize=eq_font, ha = 'left', va='center')
 
         residuals = pixel[idx1:idx2] - gauss(wl_emitted[idx1:idx2], *popts[i])
         ax[1][i].scatter(wl_emitted[idx1:idx2], residuals, color='black', zorder=5)
@@ -101,9 +135,13 @@ def large_step_plot(*args):
         ax[1][i].tick_params(axis='both', labelsize= 16)
         ax[1][i].axvline(0.67166, linestyle='--', color='gray', alpha=0.6, linewidth=1)
         ax[1][i].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
-
+        #tickloc, ticklabel = ax[1][i].xticks()
+        #ax[1][i].xticks(tickloc, float(ticklabel) * 10000)
+        #plt.setp(ax[1][i], xticks = plt.xticks()[0], xticklabels=plt.xticks()[1] * 10000)
+        ticks_x = ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(x * 10000))
+        ax[0][i].xaxis.set_major_formatter(ticks_x)
     
-    xlabel = "\\mathrm{Wavelength}~(\\mu \\mathrm{m})"
+    xlabel = "\\mathrm{Wavelength}~(\\mathrm{\\r{A}})"
     fig.text(0.5, 0.05, '$%s$'%xlabel, fontsize=fontsize, ha='center', va='center')
     ylabel = "\\mathrm{MJy/sr}"
     fig.text(0.07, 0.5, '$%s$'%ylabel, fontsize=fontsize, ha='center', va='center', rotation='vertical')

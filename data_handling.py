@@ -3,11 +3,15 @@ from astropy.io import fits
 import pandas as pd
 from scipy.optimize import curve_fit
 import scienceplots
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
+import matplotlib.ticker as ticker
 
 plt.style.use('science')
 plt.rc('lines', linewidth=2)
+plt.rc('text', usetex=True)
+
 file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 
 header = file[1].header
