@@ -101,8 +101,8 @@ def gaussian3(x, *args):
      amp1, width1, amp2, width2, amp3, pos3, width3, m, C = args
      amp1 = amp1 - m*x - C
      amp2 = amp2 - m*x - C
-     f1 = amp1 * np.exp(-1*((x - 0.67166)**2) / (2*width1**2))# n2-1 is 0.654985
-     f2 = amp2 * np.exp(-1*((x - 0.6731)**2) / (2*width1**2))# halpha is 0.65641
+     f1 = amp1 * np.exp(-1*((x - 0.671644)**2) / (2*width1**2))# n2-1 is 0.654985
+     f2 = amp2 * np.exp(-1*((x - 0.673081)**2) / (2*width1**2))# halpha is 0.65641
      f3 = amp3 * np.exp(-1*((x - pos3)**2) / (2*width3**2)) # n2-2 is 0.658528
      broad = 0 # a4 * np.exp(-1*((x - b4)**2) / (2*c4**2))
      return f1 + f2 + 0 + broad + C + m*x
@@ -111,18 +111,26 @@ def gaussian2_diff_wid(x, *args):
      amp1, width1, amp2, width2, m, C = args
      amp1 = amp1 - m*x - C
      amp2 = amp2 - m*x - C
-     f1 = amp1 * np.exp(-1*((x - 0.67166)**2) / (2*width1**2))
-     f2 = amp2 * np.exp(-1*((x - 0.6731)**2) / (2*width2**2))
+     f1 = amp1 * np.exp(-1*((x - 0.671644)**2) / (2*width1**2))
+     f2 = amp2 * np.exp(-1*((x - 0.673081)**2) / (2*width2**2))
      return f1 + f2 + m*x + C
 
 def gaussian2_same_wid(x, *args):
      amp1, width1, amp2, m, C = args
      amp1 = amp1 - m*x - C
      amp2 = amp2 - m*x - C
-     f1 = amp1 * np.exp(-1*((x - 0.67166)**2) / (2*width1**2))
-     f2 = amp2 * np.exp(-1*((x - 0.6731)**2) / (2*width1**2))
+     f1 = amp1 * np.exp(-1*((x - 0.671644)**2) / (2*width1**2))
+     f2 = amp2 * np.exp(-1*((x - 0.673081)**2) / (2*width1**2))
      return f1 + f2 + m*x + C
 
-
+def integrated_spectrum(data):
+     wl_file = np.empty((np.shape(data)[1], np.shape(data)[2]))
+     for i in range(np.shape(data)[1]):
+          for j in range(np.shape(data)[2]):
+               wl_file[i, j] = np.nansum(data[:, i , j], axis=0)
+     hdu = fits.PrimaryHDU(wl_file)
+     hdu.writeto('integrated_SPT2147.fits')
+     
+     
 
 # make function to subtract larger continuum instead of narrow

@@ -42,7 +42,7 @@ def create_spectrum_photos():
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
                 plt.close();
 
-def show_img_pixel(pixel, pixx, pixy):
+def show_img_pixel(pixel, pixy, pixx):
      plt.imshow(pixel, origin='lower')
      plt.scatter([pixx], [pixy], color='red', s=10)
      plt.colorbar()
@@ -66,7 +66,7 @@ def large_step_plot(*args):
     fig, ax = plt.subplots(2, len(popts), figsize=(len(popts) * 7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
     pos = [0.67166, 0.6731]
     for i in range(len(popts)):
-        ax[0][i].step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='pre')
+        ax[0][i].step(wl_emitted[idx1:idx2], pixel[idx1:idx2], where='mid')
         ax[0][i].fill_between(wl_emitted[idx1:idx2], pixel[idx1:idx2] - unc[idx1:idx2], pixel[idx1:idx2] + unc[idx1:idx2], alpha=0.2)
         gauss = gaussian2_same_wid
         if not same_widths[i]:
@@ -75,8 +75,8 @@ def large_step_plot(*args):
         ax[0][i].plot(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), gauss(np.linspace(wl_emitted[idx1], wl_emitted[idx2], 10000), *popts[i]), ls='--', color='mediumseagreen', zorder=6)
         ax[0][i].set_title(titles[i], fontsize = fontsize)
         ax[0][i].minorticks_on()
-        ax[0][i].axvline(0.67166, linestyle='--', color='gray', alpha=0.6, linewidth=1)
-        ax[0][i].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+        ax[0][i].axvline(0.671644, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+        ax[0][i].axvline(0.673081, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
         ax[0][i].set_xlim(wl_emitted[idx1], wl_emitted[idx2])
         ax[0][i].tick_params(axis='both', labelsize= 16)
         amp6716 = str(round(popts[i][0] - popts[i][-2] * 0.67166 - popts[i][-1], 4))
@@ -127,8 +127,8 @@ def large_step_plot(*args):
         ax[1][i].fill_between(wl_emitted[idx1:idx2], residuals - unc[idx1:idx2], residuals + unc[idx1:idx2], alpha=0.2)
         ax[1][i].set_xlim(wl_emitted[idx1], wl_emitted[idx2-1])
         ax[1][i].tick_params(axis='both', labelsize= 16)
-        ax[1][i].axvline(0.67166, linestyle='--', color='gray', alpha=0.6, linewidth=1)
-        ax[1][i].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+        ax[1][i].axvline(0.671644, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+        ax[1][i].axvline(0.673081, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
         #tickloc, ticklabel = ax[1][i].xticks()
         #ax[1][i].xticks(tickloc, float(ticklabel) * 10000)
         #plt.setp(ax[1][i], xticks = plt.xticks()[0], xticklabels=plt.xticks()[1] * 10000)
@@ -145,3 +145,4 @@ def large_step_plot(*args):
     
     
     # add both peaks instead of 67166, add all the parameters to the side, maybe add better error visualization
+    # plot all the pixels, ratios, and determine electron density from that
