@@ -46,6 +46,7 @@ def show_img_pixel(pixel, pixx, pixy):
      plt.imshow(pixel, origin='lower')
      plt.scatter([pixx], [pixy], color='red', s=10)
      plt.colorbar()
+     #plt.savefig('C:/Users/redma/Downloads/SII_pixel')
      plt.show()
 
 def step_plot(pixel, idx1, idx2, unc, popt, same_width=True):
@@ -82,10 +83,6 @@ def large_step_plot(*args):
         amp_err6716 = str(round(np.sqrt(pcovs[i][0][0]), 4))
         width6716 = str(round(popts[i][1] * 10000, 4))
         width_err6716 = str(round(pcovs[i][1][1] * 10000, 4))
-        m6716 = round(popts[i][-2], 3)
-        m_err6716 = round(pcovs[i][-2][-2], 3)
-        C6716 = round(popts[i][-1], 3)
-        C_err6716 = round(pcovs[i][-1][-1], 3)
 
         amp6731 = str(round(popts[i][2]- popts[i][-2] * 0.6731 - popts[i][-1], 4))
         amp_err6731 = str(round(np.sqrt(pcovs[i][2][2]), 4))
@@ -95,36 +92,33 @@ def large_step_plot(*args):
         else:
             width6731 = str(round(popts[i][3] * 10000 , 4))
             width_err6731 = str(round(pcovs[i][3][3] * 10000, 4))
-        m6731 = round(popts[i][-2], 3)
-        m_err6731 = round(pcovs[i][-2][-2], 3)
-        C6731 = round(popts[i][-1], 3)
-        C_err6731 = round(pcovs[i][-1][-1], 3)
-
 
         eq_font = 11
         offset = 0.13
         multiplier = 0.422
         # 6716 params
-        #m_eq = f"\\mathrm{{m}} = {m6716} \\pm {m_err6716}"
-        #C_eq = f"\\mathrm{{C}} = {C6716} \\pm {C_err6716}"
+        sII_6716 = f"\\mathrm{{[SII]_{{6716}}}}"
         amp_eq = f"\\mathrm{{Ampl.}} = {amp6716} \\pm {amp_err6716}"
         width_eq = f"\\mathrm{{Width}} = {width6716} \\pm {width_err6716}"
+        fig.text(multiplier * i + offset, 0.825, "$%s$"%sII_6716, fontsize=eq_font+2, ha = 'left', va='center')
         fig.text(multiplier * i + offset, 0.8, "$%s$"%amp_eq, fontsize=eq_font, ha = 'left', va='center')
         fig.text(multiplier * i + offset, 0.775, "$%s$"%width_eq, fontsize=eq_font, ha = 'left', va='center')
-        #fig.text(multiplier * i + offset, 0.75, "$%s$"%m_eq, fontsize=eq_font, ha = 'left', va='center')
-        #fig.text(multiplier * i + offset, 0.725, "$%s$"%C_eq, fontsize=eq_font, ha = 'left', va='center')
-
+        
         offset = 0.35
         multiplier = 0.422
         # 6731 params
-        #m_eq = f"\\mathrm{{m}} = {m6731} \\pm {m_err6731}"
-        #C_eq = f"\\mathrm{{C}} = {C6731} \\pm {C_err6731}"
+        sII_6731 = f"\\mathrm{{[SII]_{{6731}}}}"
         amp_eq = f"\\mathrm{{Ampl.}} = {amp6731} \\pm {amp_err6731}"
         width_eq = f"\\mathrm{{Width}} = {width6731} \\pm {width_err6731}"
+        fig.text(multiplier * i + offset, 0.825, "$%s$"%sII_6731, fontsize=eq_font+2, ha = 'left', va='center')
         fig.text(multiplier * i + offset, 0.8, "$%s$"%amp_eq, fontsize=eq_font, ha = 'left', va='center')
         fig.text(multiplier * i + offset, 0.775, "$%s$"%width_eq, fontsize=eq_font, ha = 'left', va='center')
-        #fig.text(multiplier * i + offset, 0.75, "$%s$"%m_eq, fontsize=eq_font, ha = 'left', va='center')
-        #fig.text(multiplier * i + offset, 0.725, "$%s$"%C_eq, fontsize=eq_font, ha = 'left', va='center')
+        
+        # ratio of lines equation
+        ratio = round((float(amp6716) / float(amp6731)) * (float(width6716) / float(width6731)), 4)
+        ratio_unc = round(ratio * np.sqrt((float(amp_err6716) / float(amp6716))**2 + (float(amp_err6731) / float(amp6731))**2 + (float(width_err6731) / float(width6731))**2 + (float(width_err6716) / float(width6716))**2), 4)
+        ratio_eq = f"\\frac{{\\mathrm{{[SII]_{{6716}}}}}}{{\\mathrm{{[SII]_{{6731}}}}}} = {ratio} \\pm {ratio_unc}"
+        fig.text(multiplier * i + offset, 0.42, "$%s$"%ratio_eq, fontsize=eq_font + 4, ha='center', va='center')
 
         residuals = pixel[idx1:idx2] - gauss(wl_emitted[idx1:idx2], *popts[i])
         ax[1][i].scatter(wl_emitted[idx1:idx2], residuals, color='black', zorder=5)
@@ -145,7 +139,9 @@ def large_step_plot(*args):
     fig.text(0.5, 0.05, '$%s$'%xlabel, fontsize=fontsize, ha='center', va='center')
     ylabel = "\\mathrm{MJy/sr}"
     fig.text(0.07, 0.5, '$%s$'%ylabel, fontsize=fontsize, ha='center', va='center', rotation='vertical')
+    #plt.savefig('C:/Users/redma/Downloads/SII_ratio_fig')
     plt.show()
-
+    
+    
+    
     # add both peaks instead of 67166, add all the parameters to the side, maybe add better error visualization
-    # fix sig figs on width

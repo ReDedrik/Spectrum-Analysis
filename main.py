@@ -82,18 +82,6 @@ popt_reduced_cont_diff, pcov_reduced_cont_diff = curve_fit(gaussian2_diff_wid, x
 #large_step_plot(pixel - reduce_cont(pixel), idx1, idx2+1, unc, [popt_reduced_cont, popt_reduced_cont_diff], [pcov_reduced_cont, pcov_reduced_cont_diff], ['Same Widths / Reduced Cont.', 'Different Widths / Reduced Cont.'], [True, False])
 
 
+show_img_pixel(data[50], pixx, pixy)
 
-#pixel_comparison(pixel - reduce_cont(pixel), pixel)
-#lambda6716, lambda6731 = popt[0], popt[3]
-#m, C = popt[-2], popt[-1]
-# should i be restricting the amplitude so much
-# this value?
-#print(lambda6716 / lambda6731)
-# this value?
-#print((lambda6716 - pixel[idx1] * m - C) / (lambda6731 - pixel[idx1] * m - C))
-# or a different value without taking into account m and C
-
-#show_img_pixel(data[50], pixx, pixy)
-
-#plot residuals, plot different parameters (change widths, fit more continuum, wider range)
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
