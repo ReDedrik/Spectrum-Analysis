@@ -43,6 +43,10 @@ def create_spectrum_photos():
                 plt.close();
 
 def show_img_pixel(pixel, pixy, pixx):
+     for i in range(len(pixel)):
+         for j in range(len(pixel[i])):
+             if pixel[i][j] == 0:
+                 pixel[i][j] = np.nan
      plt.imshow(pixel, origin='lower')
      plt.scatter([pixx], [pixy], color='red', s=10)
      plt.colorbar()

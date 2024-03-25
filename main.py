@@ -5,7 +5,7 @@ warnings.filterwarnings('ignore')
 
 #integrated_spectrum(data)
 
-pixy, pixx = 20, 27 #26, 18 #25, 18 # 25,15 BLOWS
+pixy, pixx = 14, 26 #26, 18 #25, 18 # 25,15 BLOWS
 weight = 1
 pixel = weighted_avg_5x5(pixx, pixy, weight)
 unc = weighted_unc_5x5(pixx, pixy, weight)
@@ -45,12 +45,13 @@ bounds_same = [[max_SII_1-0.1, 0,
 
 #bounds_reduced_diff = 1
 
+
 popt_diff, pcov_diff = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_diff, bounds=bounds_diff, maxfev= 1000000)
 #step_plot(pixel, idx1, idx2, unc, popt_diff, False)
 popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
 
 
-#large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
+large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
 
 cont = reduce_cont(pixel)[idx1:idx2+1]
 y = y - cont
@@ -75,9 +76,9 @@ popt_reduced_cont_diff, pcov_reduced_cont_diff = curve_fit(gaussian2_diff_wid, x
 
 #large_step_plot(pixel - reduce_cont(pixel), idx1, idx2+1, unc, [popt_reduced_cont, popt_reduced_cont_diff], [pcov_reduced_cont, pcov_reduced_cont_diff], ['Same Widths / Reduced Cont.', 'Different Widths / Reduced Cont.'], [True, False])
 
-integrated_file = fits.open('integrated_SPT2147.fits')
-integrated_data = integrated_file[0].data
-show_img_pixel(integrated_data, pixx, pixy)
+#integrated_file = fits.open('integrated_SPT2147.fits')
+#integrated_data = integrated_file[0].data
+#show_img_pixel(integrated_data, pixx, pixy)
 
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
 # try to fit every pixel, and if it is bad then cut it out
