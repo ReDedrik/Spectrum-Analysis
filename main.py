@@ -117,3 +117,4 @@ show_img_pixel(integrated_data, pixx, pixy)
 
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
 # try to fit every pixel, and if it is bad then cut it out
+# fit redshift to correct SII locations
