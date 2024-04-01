@@ -42,7 +42,7 @@ def create_spectrum_photos():
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
                 plt.close();
 
-def show_img_pixel(pixel, pixy, pixx):
+def show_img_pixel(pixel, pixx, pixy):
      for i in range(len(pixel)):
          for j in range(len(pixel[i])):
              if pixel[i][j] == 0:
@@ -143,7 +143,7 @@ def large_step_plot(*args):
     fig.text(0.5, 0.05, '$%s$'%xlabel, fontsize=fontsize, ha='center', va='center')
     ylabel = "\\mathrm{MJy/sr}"
     fig.text(0.07, 0.5, '$%s$'%ylabel, fontsize=fontsize, ha='center', va='center', rotation='vertical')
-    #plt.savefig('C:/Users/redma/Downloads/SII_ratio_fig')
+    #plt.savefig(f'C:/Users/redma/Downloads/SII_photos/SII_ratio_fig_{titles[0]}')
     plt.show()
     
     

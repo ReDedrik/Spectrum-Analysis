@@ -7,6 +7,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
 import matplotlib.ticker as ticker
+from scipy.stats import chisquare
 
 plt.style.use('science')
 plt.rc('lines', linewidth=2)
