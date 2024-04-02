@@ -18,9 +18,82 @@ file = fits.open("SPT2147-50-sigmaclipped-g395m-s3d_v2.zip")
 header = file[1].header
 data = file[1].data
 uncertainties = file[2].data
-wl_emitted = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
+wl_obs = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
 z = 3.7604
-wl_emitted = wl_emitted / (1+z)
+wl_emitted = wl_obs / (1+z)
+
+class Pixel:
+     def __init__(self, pixx, pixy):
+          self.x = pixx
+          self.y = pixy
+          self.z = 3.7604
+          self.pixel = data[:, self.y, self.x]
+          self.wl_emitted = wl_emitted
+          self.unc = uncertainties[:, self.y, self.x]
+          self.fontsize = 22
+
+     def __str__(self):
+          return f'({self.x}, {self.y})'
+
+     def return_spectrum(self):
+          pass
+     
+     def average_values(self, undo = False):
+          if undo:
+               self.pixel = self.pixel = data[:, self.y, self.x]
+               return
+          padded_data = np.pad(data, ((0, 0), (1, 1), (1, 1)), mode='constant', constant_values=np.nan)
+          self.pixel = np.nanmean(padded_data[:, self.x : self.x + 3, self.y : self.y + 3], axis=(1, 2))
+          
+
+     def plot_spectrum(self, indxs = [], fit_params = None):
+          idx1, idx2 = indxs
+          if fit_params != None:
+               popt, pcov = fit_params
+               self.z = popt[-1]
+               self.wl_emitted = wl_obs / (1+self.z)
+          fig, axes = plt.subplots(2, 1, figsize=(7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
+          axes[0].step(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2], where='mid')
+          axes[0].fill_between(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2] - self.unc[idx1:idx2], self.pixel[idx1:idx2] + self.unc[idx1:idx2], alpha=0.2)
+          axes[0].plot(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), gaussian2_same_wid(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), *popt), ls='--', color='mediumseagreen', zorder=6)
+          axes[0].set_title(f'({self.x}, {self.y})', fontsize = self.fontsize)
+          axes[0].minorticks_on()
+          axes[0].axvline(0.671644, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+          axes[0].axvline(0.673081, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+          axes[0].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2])
+          axes[0].tick_params(axis='both', labelsize= 16)
+
+          residuals = self.pixel[idx1:idx2] - gaussian2_same_wid(self.wl_emitted[idx1:idx2], *popt)
+          axes[1].scatter(self.wl_emitted[idx1:idx2], residuals, color='black', zorder=5)
+          axes[1].axhline(0, alpha=0.4, color='gray')
+          axes[1].fill_between(self.wl_emitted[idx1:idx2], residuals - self.unc[idx1:idx2], residuals + self.unc[idx1:idx2], alpha=0.2)
+          axes[1].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2-1])
+          axes[1].tick_params(axis='both', labelsize= 16)
+          axes[1].axvline(0.671644, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+          axes[1].axvline(0.673081, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+
+          plt.show()
+
+     def plot_pixel(self, save = False):
+          int_data = integrated_data()
+          plt.figure(figsize=(7, 7))
+          plt.imshow(int_data, origin='lower')
+          plt.scatter([self.x], [self.y], color='red', s=10)
+          plt.colorbar()
+          if not save:
+               plt.show()
+               return
+          plt.savefig('C:/Users/redma/Downloads/SII_pixel')
+
+
+def integrated_data():
+     integrated_file = fits.open('integrated_SPT2147.fits')
+     integrated_data = integrated_file[0].data
+     for i in range(len(integrated_data)):
+          for j in range(len(integrated_data[i])):
+               if integrated_data[i][j] == 0:
+                    integrated_data[i][j] = np.nan
+     return integrated_data
 
 def quickselect(L, k):
      x = L[0]
@@ -117,11 +190,11 @@ def gaussian2_diff_wid(x, *args):
      return f1 + f2 + m*x + C
 
 def gaussian2_same_wid(x, *args):
-     amp1, width1, amp2, m, C = args
-     amp1 = amp1 - m*x - C
-     amp2 = amp2 - m*x - C
-     f1 = amp1 * np.exp(-1*((x - 0.671644)**2) / (2*width1**2))
-     f2 = amp2 * np.exp(-1*((x - 0.673081)**2) / (2*width1**2))
+     amp1, width1, amp2, m, C, z = args
+     amp1 = amp1
+     amp2 = amp2
+     f1 = amp1 * np.exp(-1*(((x - 0.671644) * (1+z))**2) / (2*(width1 * (1+z))**2))
+     f2 = amp2 * np.exp(-1*(((x - 0.673081) * (1+z))**2) / (2*(width1 * (1+z))**2))
      return f1 + f2 + m*x + C
 
 def integrated_spectrum(data):
@@ -132,6 +205,25 @@ def integrated_spectrum(data):
      hdu = fits.PrimaryHDU(wl_file)
      hdu.writeto('integrated_SPT2147.fits')
      
-     
+def index_finder():
+     sII_1 = find_nearest(wl_emitted, 0.671644)[0]
+     sII_2 = find_nearest(wl_emitted, 0.673081)[0]
+     return sII_1, sII_2
 
 # make function to subtract larger continuum instead of narrow
+     
+'''
+
+pick a pixel
+if S/N (integrated gaussians / uncertainties) below 3, reject pixel
+fit that pixel in observed space (fit for z)
+using z, convert to emitted space
+if fit good, keep it
+
+to generalize to any photo:
+1. aperture that ho
+2. convert to wl_emitted
+3. find high(ish) detection of line
+4. leave wl_obs and fit every pixels redshift based on known indexes of lines
+
+'''

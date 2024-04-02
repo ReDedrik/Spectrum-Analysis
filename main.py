@@ -16,104 +16,38 @@ max_SII_1 = local_max(pixel, 0.6709, 0.67275)
 max_SII_2 = local_max(pixel, 0.67275, 0.675)
 C = 0.4
 
-
-xshape = np.shape(data)[2]
-yshape = np.shape(data)[1]
-
-x = wl_emitted[idx1:idx2+1]
-
-
-'''
-for x_iter in range(xshape):
-    for y_iter in range(yshape):
-        if not np.isnan(data[: , y_iter, x_iter]).all():
-            pixel = weighted_avg_5x5(y_iter, x_iter, weight)
-            unc = weighted_unc_5x5(y_iter, x_iter, weight)
-            max_SII_1 = local_max(pixel, 0.6709, 0.67275)
-            max_SII_2 = local_max(pixel, 0.67275, 0.675)
-            y = pixel[idx1:idx2+1]
-            dy = unc[idx1:idx2+1]
-            guess_same = (max_SII_1, 0.00045,
-            max_SII_2,
-            0, C)
-            bounds_same = [[max_SII_1-0.1, 0,
-            max_SII_2-0.3, -5, 0], 
-            [max_SII_1+0.1, 10, 
-            max_SII_2 + 0.1, 5, 3]]
-            popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
-            try:
-                results = chisquare(f_obs=y, f_exp=gaussian2_same_wid(x, *popt_same))
-                if results[1] < 0.5:
-                    continue
-            except ValueError:
-                continue
-            print(f'({x_iter}, {y_iter}):\n\tStatistics: ' + str(round(results[0], 4)) + '\n\tp value: ' + str(round(results[1], 8)))
-            large_step_plot(pixel, idx1, idx2, unc, [popt_same, popt_same], [pcov_same, pcov_same], [f'{x_iter}_{y_iter}', 'Same Widths'], [True, True])
-'''
-
 x, y = wl_emitted[idx1:idx2+1], pixel[idx1:idx2+1]
 dy = unc[idx1:idx2+1]
-#create_spectrum_photos()
-#plot_pixel(pixx, pixy)
-#plot_avg_3x3(pixx, pixy) 67254
 
-guess_diff = (max_SII_1, 0.00045,
-         max_SII_2, 0.00045,
-         0, C)
-
-guess_same = (max_SII_1, 0.00045,
-         max_SII_2,
-         0, C)
+m_guess = 0
+guess_same = (max_SII_1 - m_guess - C, 0.0020,
+         max_SII_2 - m_guess - C,
+         m_guess, C, z)
 
 
-bounds_diff = [[max_SII_1-0.1, 0,
-           max_SII_2-0.3, 0, -5, 0], 
-          [max_SII_1+0.1, 10, 
-           max_SII_2 + 0.1, 10, 5, 3]]
-
-bounds_same = [[max_SII_1-0.1, 0,
-           max_SII_2-0.3, -5, 0], 
-          [max_SII_1+0.1, 10, 
-           max_SII_2 + 0.1, 5, 3]]
-
-#bounds_reduced_same = 1
-
-#bounds_reduced_diff = 1
+bounds_same = [[0, 0,
+           0, -5, 0, 3.0], 
+          [10, 10, 
+           10 + 1, 10, 5, 3.3]]
 
 
-popt_diff, pcov_diff = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_diff, bounds=bounds_diff, maxfev= 1000000)
-#step_plot(pixel, idx1, idx2, unc, popt_diff, False)
 popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
 
-print(chisquare(f_obs=y, f_exp=gaussian2_same_wid(x, *popt_same)))
-large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
+#large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
 
-cont = reduce_cont(pixel)[idx1:idx2+1]
-y = y - cont
-guess_reduced = (max_SII_1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0.00045,
-         max_SII_2 - cont[find_nearest(wl_emitted, 0.6731)[0]],
-         0, 0)
-bounds_reduced = [[max_SII_1-0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0,
-           max_SII_2-0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], -5, 0], 
-          [max_SII_1+0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 10, 
-           max_SII_2 + 0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], 5, 3]]
 
-guess_reduced_diff = (max_SII_1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0.00045,
-         max_SII_2 - cont[find_nearest(wl_emitted, 0.6731)[0]], 0.00045,
-         0, 0)
-bounds_reduced_diff = [[max_SII_1-0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 0,
-           max_SII_2-0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], 0, -5, 0], 
-          [max_SII_1+0.1 - cont[find_nearest(wl_emitted, 0.67166)[0]], 10, 
-           max_SII_2 + 0.1 - cont[find_nearest(wl_emitted, 0.6731)[0]], 10, 5, 3]]
+indices = index_finder()
+pix1 = Pixel(14, 26)
+pix1.average_values()
+pix1.plot_pixel()
 
-popt_reduced_cont, pcov_reduced_cont = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_reduced, bounds=bounds_reduced)
-popt_reduced_cont_diff, pcov_reduced_cont_diff = curve_fit(gaussian2_diff_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_reduced_diff, bounds=bounds_reduced_diff)
+pix2 = Pixel(14, 26)
+#pix2.average_values()
+#pix2.plot_pixel()
 
-#large_step_plot(pixel - reduce_cont(pixel), idx1, idx2+1, unc, [popt_reduced_cont, popt_reduced_cont_diff], [pcov_reduced_cont, pcov_reduced_cont_diff], ['Same Widths / Reduced Cont.', 'Different Widths / Reduced Cont.'], [True, False])
-
-integrated_file = fits.open('integrated_SPT2147.fits')
-integrated_data = integrated_file[0].data
-show_img_pixel(integrated_data, pixx, pixy)
+indxs=[indices[0] - 50, indices[1] + 40]
+pix1.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt_same, pcov_same])
+pix2.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt_same, pcov_same])
 
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
 # try to fit every pixel, and if it is bad then cut it out
