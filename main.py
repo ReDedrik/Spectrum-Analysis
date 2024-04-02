@@ -19,16 +19,16 @@ C = 0.4
 x, y = wl_emitted[idx1:idx2+1], pixel[idx1:idx2+1]
 dy = unc[idx1:idx2+1]
 
-m_guess = 0
-guess_same = (max_SII_1 - m_guess - C, 0.0020,
-         max_SII_2 - m_guess - C,
+m_guess = 0.01
+guess_same = (0.15, 0.0010,
+         0.15,
          m_guess, C, z)
 
 
 bounds_same = [[0, 0,
-           0, -5, 0, 3.0], 
+           0, -5, 0, 3.6], 
           [10, 10, 
-           10 + 1, 10, 5, 3.3]]
+           10, 10, 5, 3.9]]
 
 
 popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
