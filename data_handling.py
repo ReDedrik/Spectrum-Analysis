@@ -46,6 +46,12 @@ class Pixel:
           self.pixel = np.nanmean(padded_data[:, self.x : self.x + 3, self.y : self.y + 3], axis=(1, 2))
           
 
+     def fit_pixel(self, guess, bounds, indxs = []):
+          idx1, idx2 = indxs
+          popt, pcov = curve_fit(gaussian2_same_wid, xdata=self.wl_emitted[idx1:idx2], ydata=self.pixel[idx1:idx2], sigma=self.unc[idx1:idx2], p0 = guess, bounds=bounds, maxfev= 10000000)
+          print(popt)
+          return popt, pcov
+
      def plot_spectrum(self, indxs = [], fit_params = None):
           idx1, idx2 = indxs
           if fit_params != None:
