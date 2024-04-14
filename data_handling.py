@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gs
 import matplotlib.ticker as ticker
 from scipy.stats import chisquare
+from math import factorial
+import vorbin
+
 
 plt.style.use('science')
 plt.rc('lines', linewidth=2)
@@ -21,6 +24,7 @@ uncertainties = file[2].data
 wl_obs = np.linspace(header["CRVAL3"], header["CRVAL3"]+(header["NAXIS3"]-1)*header["CDELT3"], header["NAXIS3"])
 z = 3.7604
 wl_emitted = wl_obs / (1+z)
+print(file.info())
 
 class Pixel:
      def __init__(self, pixx, pixy):
@@ -54,6 +58,7 @@ class Pixel:
 
      def plot_spectrum(self, indxs = [], fit_params = None):
           idx1, idx2 = indxs
+          smoothed_curve = savitzky_golay(self.pixel[idx1:idx2], 29, 3)
           if fit_params != None:
                popt, pcov = fit_params
                self.z = popt[-1]
@@ -61,11 +66,12 @@ class Pixel:
           fig, axes = plt.subplots(2, 1, figsize=(7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
           axes[0].step(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2], where='mid')
           axes[0].fill_between(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2] - self.unc[idx1:idx2], self.pixel[idx1:idx2] + self.unc[idx1:idx2], alpha=0.2)
-          axes[0].plot(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), gaussian2_same_wid(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), *popt), ls='--', color='mediumseagreen', zorder=6)
+          #axes[0].plot(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), gaussian2_same_wid(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), *popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
+          axes[0].plot(self.wl_emitted[idx1:idx2], smoothed_curve, label = 'SG-Curve')
           axes[0].set_title(f'({self.x}, {self.y})', fontsize = self.fontsize)
           axes[0].minorticks_on()
-          axes[0].axvline(0.671644, linestyle='--', color='gray', alpha=0.6, linewidth=1)
-          axes[0].axvline(0.673081, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+          axes[0].axvline(0.6716, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+          axes[0].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
           axes[0].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2])
           axes[0].tick_params(axis='both', labelsize= 16)
 
@@ -75,9 +81,10 @@ class Pixel:
           axes[1].fill_between(self.wl_emitted[idx1:idx2], residuals - self.unc[idx1:idx2], residuals + self.unc[idx1:idx2], alpha=0.2)
           axes[1].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2-1])
           axes[1].tick_params(axis='both', labelsize= 16)
-          axes[1].axvline(0.671644, linestyle='--', color='gray', alpha=0.6, linewidth=1)
-          axes[1].axvline(0.673081, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
-
+          axes[1].axvline(0.6716, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+          axes[1].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+          print(popt[1])
+          fig.legend()
           plt.show()
 
      def plot_pixel(self, save = False):
@@ -215,6 +222,75 @@ def index_finder():
      sII_1 = find_nearest(wl_emitted, 0.671644)[0]
      sII_2 = find_nearest(wl_emitted, 0.673081)[0]
      return sII_1, sII_2
+
+def savitzky_golay(y, window_size, order, deriv=0, rate=1):
+    r"""Smooth (and optionally differentiate) data with a Savitzky-Golay filter.
+    The Savitzky-Golay filter removes high frequency noise from data.
+    It has the advantage of preserving the original shape and
+    features of the signal better than other types of filtering
+    approaches, such as moving averages techniques.
+    Parameters
+    ----------
+    y : array_like, shape (N,)
+        the values of the time history of the signal.
+    window_size : int
+        the length of the window. Must be an odd integer number.
+    order : int
+        the order of the polynomial used in the filtering.
+        Must be less then `window_size` - 1.
+    deriv: int
+        the order of the derivative to compute (default = 0 means only smoothing)
+    Returns
+    -------
+    ys : ndarray, shape (N)
+        the smoothed signal (or it's n-th derivative).
+    Notes
+    -----
+    The Savitzky-Golay is a type of low-pass filter, particularly
+    suited for smoothing noisy data. The main idea behind this
+    approach is to make for each point a least-square fit with a
+    polynomial of high order over a odd-sized window centered at
+    the point.
+    Examples
+    --------
+    t = np.linspace(-4, 4, 500)
+    y = np.exp( -t**2 ) + np.random.normal(0, 0.05, t.shape)
+    ysg = savitzky_golay(y, window_size=31, order=4)
+    import matplotlib.pyplot as plt
+    plt.plot(t, y, label='Noisy signal')
+    plt.plot(t, np.exp(-t**2), 'k', lw=1.5, label='Original signal')
+    plt.plot(t, ysg, 'r', label='Filtered signal')
+    plt.legend()
+    plt.show()
+    References
+    ----------
+    .. [1] A. Savitzky, M. J. E. Golay, Smoothing and Differentiation of
+       Data by Simplified Least Squares Procedures. Analytical
+       Chemistry, 1964, 36 (8), pp 1627-1639.
+    .. [2] Numerical Recipes 3rd Edition: The Art of Scientific Computing
+       W.H. Press, S.A. Teukolsky, W.T. Vetterling, B.P. Flannery
+       Cambridge University Press ISBN-13: 9780521880688
+    """
+    try:
+        window_size = np.abs(np.int64(window_size))
+        order = np.abs(np.int64(order))
+    except ValueError:
+        raise ValueError("window_size and order have to be of type int")
+    if window_size % 2 != 1 or window_size < 1:
+        raise TypeError("window_size size must be a positive odd number")
+    if window_size < order + 2:
+        raise TypeError("window_size is too small for the polynomials order")
+    order_range = range(order+1)
+    half_window = (window_size -1) // 2
+    # precompute coefficients
+    b = np.mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
+    m = np.linalg.pinv(b).A[deriv] * rate**deriv * factorial(deriv)
+    # pad the signal at the extremes with
+    # values taken from the signal itself
+    firstvals = y[0] - np.abs( y[1:half_window+1][::-1] - y[0] )
+    lastvals = y[-1] + np.abs(y[-half_window-1:-1][::-1] - y[-1])
+    y = np.concatenate((firstvals, y, lastvals))
+    return np.convolve( m[::-1], y, mode='valid')
 
 # make function to subtract larger continuum instead of narrow
      

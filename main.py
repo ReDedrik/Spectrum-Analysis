@@ -20,14 +20,14 @@ x, y = wl_emitted[idx1:idx2+1], pixel[idx1:idx2+1]
 dy = unc[idx1:idx2+1]
 
 m_guess = 0.01
-guess_same = (0.4, 0.0004,
-         0.8,
+guess_same = (0.4, 0.0003,
+         0.7,
          m_guess, C, z)
 
 
 bounds_same = [[0, 0,
-           0, -5, 0, 3.7595], 
-          [10, 10, 
+           0, -5, 0, 3.7601], 
+          [10, 0.0005, 
            10, 10, 5, 3.7607]]
 
 
@@ -45,12 +45,16 @@ pix2 = Pixel(14, 26)
 #pix2.average_values()
 #pix2.plot_pixel()
 
+pix3 = Pixel(34, 30)
+
 indxs=[indices[0] - 50, indices[1] + 40]
 popt1, pcov1 = pix1.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 popt2, pcov2 = pix2.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 
-pix1.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt1, pcov1])
+#pix1.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt1, pcov1])
 pix2.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt2, pcov2])
+pix3.average_values()
+pix3.plot_spectrum(indxs = [idx1, idx2], fit_params=[*pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])])
 
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
 # try to fit every pixel, and if it is bad then cut it out
