@@ -35,6 +35,8 @@ class Pixel:
           self.wl_emitted = wl_emitted
           self.unc = uncertainties[:, self.y, self.x]
           self.fontsize = 22
+          self.popt = None
+          self.pcov = None
 
      def __str__(self):
           return f'({self.x}, {self.y})'
@@ -52,22 +54,22 @@ class Pixel:
 
      def fit_pixel(self, guess, bounds, indxs = []):
           idx1, idx2 = indxs
-          popt, pcov = curve_fit(gaussian2_same_wid, xdata=self.wl_emitted[idx1:idx2], ydata=self.pixel[idx1:idx2], sigma=self.unc[idx1:idx2], p0 = guess, bounds=bounds, maxfev= 10000000)
-          print(popt)
-          return popt, pcov
+          self.popt, self.pcov = curve_fit(gaussian2_same_wid, xdata=self.wl_emitted[idx1:idx2], ydata=self.pixel[idx1:idx2], sigma=self.unc[idx1:idx2], p0 = guess, bounds=bounds, maxfev= 10000000)
+          print(self.popt)
+          return self.popt, self.pcov
 
-     def plot_spectrum(self, indxs = [], fit_params = None):
+     def plot_spectrum(self, indxs = []):
           idx1, idx2 = indxs
           smoothed_curve = savitzky_golay(self.pixel[idx1:idx2], 29, 3)
-          if fit_params != None:
-               popt, pcov = fit_params
-               self.z = popt[-1]
+          if len(self.popt) != 0:
+               self.z = self.popt[-1]
                self.wl_emitted = wl_obs / (1+self.z)
           fig, axes = plt.subplots(2, 1, figsize=(7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
           axes[0].step(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2], where='mid')
           axes[0].fill_between(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2] - self.unc[idx1:idx2], self.pixel[idx1:idx2] + self.unc[idx1:idx2], alpha=0.2)
-          #axes[0].plot(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), gaussian2_same_wid(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), *popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
+          axes[0].plot(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), gaussian2_same_wid(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), *self.popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
           axes[0].plot(self.wl_emitted[idx1:idx2], smoothed_curve, label = 'SG-Curve')
+
           axes[0].set_title(f'({self.x}, {self.y})', fontsize = self.fontsize)
           axes[0].minorticks_on()
           axes[0].axvline(0.6716, linestyle='--', color='gray', alpha=0.6, linewidth=1)
@@ -75,7 +77,7 @@ class Pixel:
           axes[0].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2])
           axes[0].tick_params(axis='both', labelsize= 16)
 
-          residuals = self.pixel[idx1:idx2] - gaussian2_same_wid(self.wl_emitted[idx1:idx2], *popt)
+          residuals = self.pixel[idx1:idx2] - gaussian2_same_wid(self.wl_emitted[idx1:idx2], *self.popt)
           axes[1].scatter(self.wl_emitted[idx1:idx2], residuals, color='black', zorder=5)
           axes[1].axhline(0, alpha=0.4, color='gray')
           axes[1].fill_between(self.wl_emitted[idx1:idx2], residuals - self.unc[idx1:idx2], residuals + self.unc[idx1:idx2], alpha=0.2)
@@ -83,7 +85,7 @@ class Pixel:
           axes[1].tick_params(axis='both', labelsize= 16)
           axes[1].axvline(0.6716, linestyle='--', color='gray', alpha=0.6, linewidth=1)
           axes[1].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
-          print(popt[1])
+          print(self.popt[1])
           fig.legend()
           plt.show()
 
@@ -183,16 +185,6 @@ def local_max(pixel, x1, x2):
 def reduce_cont(pixel):
     rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
     return rolling_median
-
-def gaussian3(x, *args):
-     amp1, width1, amp2, width2, amp3, pos3, width3, m, C = args
-     amp1 = amp1 - m*x - C
-     amp2 = amp2 - m*x - C
-     f1 = amp1 * np.exp(-1*((x - 0.671644)**2) / (2*width1**2))# n2-1 is 0.654985
-     f2 = amp2 * np.exp(-1*((x - 0.673081)**2) / (2*width1**2))# halpha is 0.65641
-     f3 = amp3 * np.exp(-1*((x - pos3)**2) / (2*width3**2)) # n2-2 is 0.658528
-     broad = 0 # a4 * np.exp(-1*((x - b4)**2) / (2*c4**2))
-     return f1 + f2 + 0 + broad + C + m*x
 
 def gaussian2_diff_wid(x, *args):
      amp1, width1, amp2, width2, m, C = args

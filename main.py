@@ -52,10 +52,13 @@ popt1, pcov1 = pix1.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 popt2, pcov2 = pix2.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 
 #pix1.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt1, pcov1])
-pix2.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt2, pcov2])
+pix2.plot_spectrum(indxs = [idx1, idx2])
 pix3.average_values()
-pix3.plot_spectrum(indxs = [idx1, idx2], fit_params=[*pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])])
+pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])
+pix3.plot_spectrum(indxs = [idx1, idx2])
 
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
 # try to fit every pixel, and if it is bad then cut it out
 # fit redshift to correct SII locations
+
+# fit halpha and n2
