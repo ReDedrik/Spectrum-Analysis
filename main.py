@@ -12,23 +12,26 @@ unc = weighted_unc_5x5(pixy, pixx, weight)
 idx1, val1 = find_nearest(wl_emitted, 0.661)# 0.65325
 idx2, val2 = find_nearest(wl_emitted, 0.69)# 0.66025
 
-max_SII_1 = local_max(pixel, 0.6709, 0.67275)
-max_SII_2 = local_max(pixel, 0.67275, 0.675)
+
+idx1, val1 = find_nearest(wl_emitted, 0.653)# 0.65325
+idx2, val2 = find_nearest(wl_emitted, 0.665)# 0.66025
+
 C = 0.4
 
 x, y = wl_emitted[idx1:idx2+1], pixel[idx1:idx2+1]
 dy = unc[idx1:idx2+1]
 
 m_guess = 0.01
-guess_same = (0.4, 0.0003,
-         0.7,
-         m_guess, C, z)
+guess_same = (0.5, 0.0003,
+              1.5, 0.0005,
+              0.7,
+              m_guess, C, z)
 
 
-bounds_same = [[0, 0,
-           0, -5, 0, 3.7601], 
-          [10, 0.0005, 
-           10, 10, 5, 3.7607]]
+bounds_same = [[0, 0, 0, 0,
+           0, -5, 0, 1], 
+          [10, 0.1, 10, 0.1,
+           10, 10, 5, 5.7618]]
 
 
 #popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
@@ -52,7 +55,7 @@ popt1, pcov1 = pix1.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 popt2, pcov2 = pix2.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 
 #pix1.plot_spectrum(indxs = [idx1, idx2], fit_params=[popt1, pcov1])
-pix2.plot_spectrum(indxs = [idx1, idx2])
+pix1.plot_spectrum(indxs = [idx1, idx2])
 pix3.average_values()
 pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 pix3.plot_spectrum(indxs = [idx1, idx2])
