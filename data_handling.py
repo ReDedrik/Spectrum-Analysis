@@ -49,7 +49,7 @@ class Pixel:
                self.pixel = self.pixel = data[:, self.y, self.x]
                return
           padded_data = np.pad(data, ((0, 0), (1, 1), (1, 1)), mode='constant', constant_values=np.nan)
-          self.pixel = np.nanmean(padded_data[:, self.x : self.x + 3, self.y : self.y + 3], axis=(1, 2))
+          self.pixel = np.nanmean(padded_data[:, self.x - 1 : self.x + 1, self.y - 1: self.y + 1], axis=(1, 2))
           
 
      def fit_pixel(self, guess, bounds, indxs = []):
@@ -58,9 +58,9 @@ class Pixel:
           print(self.popt)
           return self.popt, self.pcov
 
-     def plot_spectrum(self, indxs = []):
+     def plot_spectrum(self, indxs = [], show = True):
           idx1, idx2 = indxs
-          smoothed_curve = savitzky_golay(self.pixel[idx1:idx2], 29, 3)
+          #smoothed_curve = savitzky_golay(self.pixel[idx1:idx2], 29, 3)
           if len(self.popt) != 0:
                self.z = self.popt[-1]
                self.wl_emitted = wl_obs / (1+self.z)
@@ -68,7 +68,7 @@ class Pixel:
           axes[0].step(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2], where='mid')
           axes[0].fill_between(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2] - self.unc[idx1:idx2], self.pixel[idx1:idx2] + self.unc[idx1:idx2], alpha=0.2)
           axes[0].plot(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), gaussian3(np.linspace(self.wl_emitted[idx1], self.wl_emitted[idx2], 10000), *self.popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
-          axes[0].plot(self.wl_emitted[idx1:idx2], smoothed_curve, label = 'SG-Curve')
+          #axes[0].plot(self.wl_emitted[idx1:idx2], smoothed_curve, label = 'SG-Curve')
 
           axes[0].set_title(f'({self.x}, {self.y})', fontsize = self.fontsize)
           axes[0].minorticks_on()
@@ -87,7 +87,8 @@ class Pixel:
           axes[1].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
           print(self.popt[1])
           fig.legend()
-          plt.show()
+          if show:
+               plt.show()
 
      def plot_pixel(self, save = False):
           int_data = integrated_data()
@@ -204,12 +205,12 @@ def gaussian2_same_wid(x, *args):
 
 def gaussian3(x, *args):
      amp1, width1, amp2, width2, amp3, m, C, z = args
-     # f1 = amp1 * np.exp(-1*(((x - 0.6548050) * (1+z))**2) / (2*(width1 * (1+z))**2))
-     # f2 = amp2 * np.exp(-1*(((x - 0.6562819) * (1+z))**2) / (2*(width2 * (1+z))**2))
-     # f3 = amp3 * np.exp(-1*(((x - 0.6583460) * (1+z))**2) / (2*(width1 * (1+z))**2))
-     f1 = amp1 * np.exp(-1*((x - 0.6548050*(1))**2) / (2*(width1)**2))
-     f2 = amp2 * np.exp(-1*((x - 0.6562819*(1))**2) / (2*(width2)**2))
-     f3 = amp3 * np.exp(-1*((x - 0.6583460*(1))**2) / (2*(width1)**2))
+     #f1 = amp1 * np.exp(-1*(((x - 0.6548050) * (1+z))**2) / (2*(width1 * (1+z))**2))
+     #f2 = amp2 * np.exp(-1*(((x - 0.6562819) * (1+z))**2) / (2*(width2 * (1+z))**2))
+     #f3 = amp3 * np.exp(-1*(((x - 0.6583460) * (1+z))**2) / (2*(width1 * (1+z))**2))
+     f1 = amp1 * np.exp(-1*((x - 0.6548050*(1+z))**2) / (2*(width1)**2))
+     f2 = amp2 * np.exp(-1*((x - 0.6562819*(1+z))**2) / (2*(width2)**2))
+     f3 = amp3 * np.exp(-1*((x - 0.6583460*(1+z))**2) / (2*(width1)**2))
      return f1 + f2 + f3 + m*x + C
 
 def integrated_spectrum(data):
@@ -296,6 +297,9 @@ def savitzky_golay(y, window_size, order, deriv=0, rate=1):
 
 # make function to subtract larger continuum instead of narrow
      
+
+
+
 '''
 
 pick a pixel
