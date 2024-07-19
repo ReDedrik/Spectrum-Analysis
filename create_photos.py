@@ -32,28 +32,25 @@ def clear_photos():
 
 def create_spectrum_photos():
     clear_photos()
-    idx1, val1 = find_nearest(wl_emitted, 0.653)# 0.65325
-    idx2, val2 = find_nearest(wl_emitted, 0.665)# 0.66025
+    idx1, val1 = find_nearest(wl_emitted, 0.664)# 0.65325
+    idx2, val2 = find_nearest(wl_emitted, 0.682)# 0.66025   
     for i in range(11, 40):#np.shape(data)[1]):
         for j in range(np.shape(data)[2]):
             if not np.isnan(data[:, i, j]).all():
-                guess = (0.7, 0.0003,
-                         1.5, 0.0006,
-                         0.9,
-                         0.01, 0.4, z)
+                guess = (0.5, 0.0003,
+                        0.5, 0.1, z)
 
-
-                bounds = [[0, 0, 0, 0, 
-                           0, -5, 0, 1], 
-                           [10, 0.1, 10, 0.1,
-                            10, 10, 5, 5.7618]]
+                bounds = [[0, 0, 0, 0, 1], 
+          [10, 0.1, 10, 5, 5.7618]]
                 try:
 
-                    pixel = Pixel(j, i)
+                    pixel = Pixel(i, j)
                     #pixel.average_values()
                     pixel.fit_pixel(guess, bounds, [idx1, idx2])
                     pixel.plot_spectrum(indxs=[idx1, idx2], show = False)
                 except ValueError:
+                    pass
+                except RuntimeError:
                     pass
                 if not os.path.exists(f"pixels/{i}_pixels"):
                     os.mkdir(f"pixels/{i}_pixels")

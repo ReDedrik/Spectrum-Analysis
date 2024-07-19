@@ -54,7 +54,7 @@ class Pixel:
 
      def fit_pixel(self, guess, bounds, indxs = []):
           idx1, idx2 = indxs
-          self.popt, self.pcov = curve_fit(gaussian3, xdata=wl_obs[idx1:idx2], ydata=self.pixel[idx1:idx2], sigma=self.unc[idx1:idx2], p0 = guess, bounds=bounds, maxfev= 10000000)
+          self.popt, self.pcov = curve_fit(gaussian2, xdata=wl_obs[idx1:idx2], ydata=self.pixel[idx1:idx2], sigma=self.unc[idx1:idx2], p0 = guess, bounds=bounds, maxfev= 10000)
           print(self.popt)
           return self.popt, self.pcov
 
@@ -62,34 +62,35 @@ class Pixel:
           idx1, idx2 = indxs
           #smoothed_curve = savitzky_golay(self.pixel[idx1:idx2], 29, 3)
           if len(self.popt) != 0:
+               print('poop')
                self.z = self.popt[-1]
+               #self.z = 3.7604
                self.wl_emitted = wl_obs / (1+self.z)
           fig, axes = plt.subplots(2, 1, figsize=(7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
           axes[0].step(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2], where='mid')
           axes[0].fill_between(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2] - self.unc[idx1:idx2], self.pixel[idx1:idx2] + self.unc[idx1:idx2], alpha=0.2)
-          axes[0].plot(self.wl_emitted, gaussian3(wl_obs, *self.popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
+          axes[0].plot(np.linspace(self.wl_emitted[0], self.wl_emitted[-1], 10000), gaussian3(np.linspace(self.wl_emitted[0], self.wl_emitted[-1], 10000), *self.popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
           #axes[0].plot(self.wl_emitted[idx1:idx2], smoothed_curve, label = 'SG-Curve')
           
           axes[0].set_title(f'({self.x}, {self.y})', fontsize = self.fontsize)
           axes[0].minorticks_on()
-          axes[0].axvline(0.6716, linestyle='--', color='gray', alpha=0.6, linewidth=1)
-          axes[0].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+          axes[0].axvline(0.671829, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+          axes[0].axvline(0.673267, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
           axes[0].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2])
           axes[0].tick_params(axis='both', labelsize= 16)
-
+          #axes[0].set_ylim(0.8, 3)
           residuals = self.pixel[idx1:idx2] - gaussian3(wl_obs[idx1:idx2], *self.popt)
           axes[1].scatter(self.wl_emitted[idx1:idx2], residuals, color='black', zorder=5)
           axes[1].axhline(0, alpha=0.4, color='gray')
           axes[1].fill_between(self.wl_emitted[idx1:idx2], residuals - self.unc[idx1:idx2], residuals + self.unc[idx1:idx2], alpha=0.2)
           axes[1].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2-1])
           axes[1].tick_params(axis='both', labelsize= 16)
-          axes[1].axvline(0.6716, linestyle='--', color='gray', alpha=0.6, linewidth=1)
-          axes[1].axvline(0.6731, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
+          axes[1].axvline(0.671829, linestyle='--', color='gray', alpha=0.6, linewidth=1)
+          axes[1].axvline(0.673267, linestyle='--', color='gray', alpha = 0.6, linewidth=1)
           print(self.popt[1])
           fig.legend()
           if show:
                plt.show()
-          plt.close()
 
 
 
@@ -190,30 +191,20 @@ def reduce_cont(pixel):
     rolling_median = ((pd.Series(pixel)).astype('float')).fillna(method='bfill').rolling(100).median()
     return rolling_median
 
-def gaussian2_diff_wid(x, *args):
-     amp1, width1, amp2, width2, m, C = args
-     amp1 = amp1 - m*x - C
-     amp2 = amp2 - m*x - C
-     f1 = amp1 * np.exp(-1*((x - 0.671644)**2) / (2*width1**2))
-     f2 = amp2 * np.exp(-1*((x - 0.673081)**2) / (2*width2**2))
-     return f1 + f2 + m*x + C
-
-def gaussian2_same_wid(x, *args):
-     amp1, width1, amp2, m, C, z = args
-     amp1 = amp1
-     amp2 = amp2
-     f1 = amp1 * np.exp(-1*(((x - 0.671644) * (1+z))**2) / (2*(width1 * (1+z))**2))
-     f2 = amp2 * np.exp(-1*(((x - 0.673081) * (1+z))**2) / (2*(width1 * (1+z))**2))
-     return f1 + f2 + m*x + C
+def gaussian2(x, *args):
+     amp1, width1, amp2, C, z = args
+     f1 = amp1 * np.exp(-1*((x - 0.671829 * (1+z))**2) / (2*(width1)**2))
+     f2 = amp2 * np.exp(-1*((x - 0.673267 * (1+z))**2) / (2*(width1)**2))
+     return f1 + f2 + C
 
 def gaussian3(x, *args):
-     amp1, width1, amp2, amp3, C, z = args
+     amp1, width1, amp2, C, z = args
      #f1 = amp1 * np.exp(-1*(((x - 0.6548050) * (1+z))**2) / (2*(width1 * (1+z))**2))
      #f2 = amp2 * np.exp(-1*(((x - 0.6562819) * (1+z))**2) / (2*(width2 * (1+z))**2))
      #f3 = amp3 * np.exp(-1*(((x - 0.6583460) * (1+z))**2) / (2*(width1 * (1+z))**2))
-     f1 = amp1 * np.exp(-1*((x - 0.654985*(1+z))**2) / (2*(width1)**2))
+     f1 = amp1 / 2.8 * np.exp(-1*((x - 0.654985*(1+z))**2) / (2*(width1)**2))
      f2 = amp2 * np.exp(-1*((x - 0.656461*(1+z))**2) / (2*(width1)**2))
-     f3 = amp3 * np.exp(-1*((x - 0.658528*(1+z))**2) / (2*(width1)**2))
+     f3 = amp1 * np.exp(-1*((x - 0.658528*(1+z))**2) / (2*(width1)**2))
      return f1 + f2 + f3 + C
 
 def integrated_spectrum(data):

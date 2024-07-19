@@ -9,25 +9,25 @@ pixx, pixy = 14, 26
 weight = 1
 pixel = weighted_avg_5x5(pixy, pixx, weight)
 unc = weighted_unc_5x5(pixy, pixx, weight)
-idx1, val1 = find_nearest(wl_emitted, 0.661)# 0.65325
-idx2, val2 = find_nearest(wl_emitted, 0.69)# 0.66025   
+idx1, val1 = find_nearest(wl_emitted, 0.667)# 0.65325
+idx2, val2 = find_nearest(wl_emitted, 0.678)# 0.66025   
 
 
-idx1, val1 = find_nearest(wl_emitted, 0.653)# 0.65325
-idx2, val2 = find_nearest(wl_emitted, 0.665)# 0.66025
+#idx1, val1 = find_nearest(wl_emitted, 0.653)# 0.65325
+#idx2, val2 = find_nearest(wl_emitted, 0.665)# 0.66025
 
-C = 0.4
+C = 2
 
 x, y = wl_emitted[idx1:idx2+1], pixel[idx1:idx2+1]
 dy = unc[idx1:idx2+1]
 
 m_guess = 0.01
 guess_same = (0.5, 0.0003,
-               0.9, C, z)
+               0.6, C, z)
 
 
-bounds_same = [[0, 0, 0, 0, 0, 1], 
-          [10, 0.1, 10, 10, 5, 5.7618]]
+bounds_same = [[0, 0, 0, 0, 1], 
+          [10, 0.1, 10, 10, 5.7618]]
 
 
 #popt_same, pcov_same = curve_fit(gaussian2_same_wid, xdata=x, ydata=y, sigma=dy, p0 = guess_same, bounds=bounds_same, maxfev= 1000000)
@@ -35,7 +35,7 @@ bounds_same = [[0, 0, 0, 0, 0, 1],
 #large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
 
 
-pix3 = Pixel(12, 28)
+pix3 = Pixel(20, 18)
 
 
 pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])
