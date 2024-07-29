@@ -69,7 +69,7 @@ class Pixel:
           fig, axes = plt.subplots(2, 1, figsize=(7, 7), gridspec_kw={'height_ratios' : [2, 1], 'hspace' : 0.05}, sharex=True)
           axes[0].step(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2], where='mid')
           axes[0].fill_between(self.wl_emitted[idx1:idx2], self.pixel[idx1:idx2] - self.unc[idx1:idx2], self.pixel[idx1:idx2] + self.unc[idx1:idx2], alpha=0.2)
-          axes[0].plot(np.linspace(self.wl_emitted[0], self.wl_emitted[-1], 10000), gaussian3(np.linspace(self.wl_emitted[0], self.wl_emitted[-1], 10000), *self.popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
+          axes[0].plot(self.wl_emitted, gaussian2(wl_obs, *self.popt), ls='--', label='Fitted Curve', color='mediumseagreen', zorder=6)
           #axes[0].plot(self.wl_emitted[idx1:idx2], smoothed_curve, label = 'SG-Curve')
           
           axes[0].set_title(f'({self.x}, {self.y})', fontsize = self.fontsize)
@@ -79,7 +79,7 @@ class Pixel:
           axes[0].set_xlim(self.wl_emitted[idx1], self.wl_emitted[idx2])
           axes[0].tick_params(axis='both', labelsize= 16)
           #axes[0].set_ylim(0.8, 3)
-          residuals = self.pixel[idx1:idx2] - gaussian3(wl_obs[idx1:idx2], *self.popt)
+          residuals = self.pixel[idx1:idx2] - gaussian2(wl_obs[idx1:idx2], *self.popt)
           axes[1].scatter(self.wl_emitted[idx1:idx2], residuals, color='black', zorder=5)
           axes[1].axhline(0, alpha=0.4, color='gray')
           axes[1].fill_between(self.wl_emitted[idx1:idx2], residuals - self.unc[idx1:idx2], residuals + self.unc[idx1:idx2], alpha=0.2)

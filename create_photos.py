@@ -56,6 +56,7 @@ def create_spectrum_photos():
                     os.mkdir(f"pixels/{i}_pixels")
                 plt.savefig(f'pixels/{i}_pixels/pixel_({i}, {j}).png')
                 plt.close();
+                del pixel
 
 def show_img_pixel(pixel, pixx, pixy):
      for i in range(len(pixel)):

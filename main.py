@@ -35,13 +35,13 @@ bounds_same = [[0, 0, 0, 0, 1],
 #large_step_plot(pixel, idx1, idx2, unc, [popt_diff, popt_same], [pcov_diff, pcov_same], ['Different Widths', 'Same Widths'], [False, True])
 
 
-pix3 = Pixel(20, 18)
+pix3 = Pixel(28, 12)
 
 
 pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])
 pix3.plot_spectrum(indxs = [idx1, idx2], show=True)
 
-#create_spectrum_photos()
+create_spectrum_photos()
 
 # good pixels: (11, 26-28), (25, 18), (20, 14-17), (28, 15-19)
 # try to fit every pixel, and if it is bad then cut it out
