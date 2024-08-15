@@ -192,9 +192,9 @@ def reduce_cont(pixel):
     return rolling_median
 
 def gaussian2(x, *args):
-     amp1, width1, amp2, C, z = args
+     amp1, width1, scale, C, z = args
      f1 = amp1 * np.exp(-1*((x - 0.671829 * (1+z))**2) / (2*(width1)**2))
-     f2 = amp2 * np.exp(-1*((x - 0.673267 * (1+z))**2) / (2*(width1)**2))
+     f2 = amp1 / scale * np.exp(-1*((x - 0.673267 * (1+z))**2) / (2*(width1)**2))
      return f1 + f2 + C
 
 def gaussian3(x, *args):

@@ -37,8 +37,9 @@ bounds_same = [[0, 0, 0, 0, 1],
 
 pix3 = Pixel(28, 12)
 
-
+pix3.average_values()
 pix3.fit_pixel(guess_same, bounds_same, [idx1, idx2])
+
 pix3.plot_spectrum(indxs = [idx1, idx2], show=True)
 
 create_spectrum_photos()

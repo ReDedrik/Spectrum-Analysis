@@ -40,12 +40,13 @@ def create_spectrum_photos():
                 guess = (0.5, 0.0003,
                         0.5, 0.1, z)
 
-                bounds = [[0, 0, 0, 0, 1], 
-          [10, 0.1, 10, 5, 5.7618]]
+                bounds = [[0, 0, 0.5, 0, 1], 
+          [10, 0.1, 1.5, 5, 5.7618]]
                 try:
 
                     pixel = Pixel(i, j)
-                    #pixel.average_values()
+                    
+                    pixel.average_values()
                     pixel.fit_pixel(guess, bounds, [idx1, idx2])
                     pixel.plot_spectrum(indxs=[idx1, idx2], show = False)
                 except ValueError:
